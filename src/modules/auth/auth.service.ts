@@ -24,6 +24,12 @@ export class AuthService {
   async register(
     data: z.infer<typeof RegisterDto>,
   ): Promise<StandardResponse<{ Id: string }>> {
+    const validation = RegisterDto.safeParse(data);
+
+    if (!validation.success) {
+      throw new BadRequestException(validation.error);
+    }
+
     const existingUser = await this.usersRepo.findOneBy({ email: data.email });
     if (existingUser) throw new BadRequestException('E-mail já cadastrado');
 
@@ -50,10 +56,17 @@ export class AuthService {
   async login(
     data: z.infer<typeof LoginDto>,
   ): Promise<StandardResponse<{ Token: string }>> {
+    const validation = LoginDto.safeParse(data);
+    if (!validation.success) {
+      throw new BadRequestException(validation.error);
+    }
+
     const user = await this.usersRepo.findOneBy({ email: data.email });
+
     if (!user) throw new UnauthorizedException('Credenciais inválidas');
 
     const passwordValid = await bcrypt.compare(data.password, user.password);
+
     if (!passwordValid)
       throw new UnauthorizedException('Credenciais inválidas');
 
