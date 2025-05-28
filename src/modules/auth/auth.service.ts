@@ -11,6 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { z } from 'zod';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { StandardResponse } from 'src/common/interfaces/response.interface';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,9 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(data: z.infer<typeof RegisterDto>) {
+  async register(
+    data: z.infer<typeof RegisterDto>,
+  ): Promise<StandardResponse<{ Id: string }>> {
     const existingUser = await this.usersRepo.findOneBy({ email: data.email });
     if (existingUser) throw new BadRequestException('E-mail já cadastrado');
 
@@ -32,10 +35,21 @@ export class AuthService {
     });
 
     await this.usersRepo.save(user);
-    return { message: 'Cadastro realizado com sucesso!' };
+
+    return {
+      Result: { Id: user.id },
+      Success: true,
+      Message: 'Usuário cadastrado com sucesso',
+      Detail: null,
+      ReturnCode: 200,
+      ReturnType: 1,
+      ResponseTime: 0,
+    };
   }
 
-  async login(data: z.infer<typeof LoginDto>) {
+  async login(
+    data: z.infer<typeof LoginDto>,
+  ): Promise<StandardResponse<{ Token: string }>> {
     const user = await this.usersRepo.findOneBy({ email: data.email });
     if (!user) throw new UnauthorizedException('Credenciais inválidas');
 
@@ -46,6 +60,14 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email };
     const token = await this.jwtService.signAsync(payload);
 
-    return { access_token: token };
+    return {
+      Result: { Token: token },
+      Success: true,
+      Message: 'Login realizado com sucesso',
+      Detail: null,
+      ReturnCode: 200,
+      ReturnType: 1,
+      ResponseTime: 0,
+    };
   }
 }

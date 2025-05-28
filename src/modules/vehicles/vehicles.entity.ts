@@ -1,3 +1,13 @@
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from '../users/users.entity';
+import { Image } from '../image/images.entity';
+
 @Entity()
 export class Vehicle {
   @PrimaryGeneratedColumn('uuid')

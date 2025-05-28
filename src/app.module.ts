@@ -1,8 +1,11 @@
+import { AuthModule } from './modules/auth/auth.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
+import { ImageModule } from './modules/image/images.module';
 
 @Module({
   imports: [
@@ -21,6 +24,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         synchronize: true,
       }),
     }),
+    AuthModule,
+    VehiclesModule,
+    ImageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

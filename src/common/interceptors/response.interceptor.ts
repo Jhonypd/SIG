@@ -20,12 +20,28 @@ export class ResponseInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const startTime = request.startTime || Date.now();
 
-    this.logger.log(`➡️ ${request.method} ${request.url}`);
+    this.logger.log(`Response to ${request.method} ${request.url}`);
 
     return next.handle().pipe(
       map((data): StandardResponse => {
         const timeResponse = Date.now() - startTime;
 
+        // Se já for StandardResponse,
+        // verifica se o responseTime veio no data,
+        // se não veio seta o timeResponse
+        if (this.isStandardResponse(data)) {
+          return {
+            ...data,
+            ResponseTime:
+              data.ResponseTime && data.ResponseTime > 0
+                ? data.ResponseTime
+                : timeResponse,
+            Message: data.Message || 'Operação realizada com sucesso',
+          };
+        }
+
+        // Se a resposta não vier no padrão StandardResponse,
+        //  formata e retorna
         return {
           Result: data ?? null,
           Success: true,
@@ -36,6 +52,16 @@ export class ResponseInterceptor implements NestInterceptor {
           ResponseTime: timeResponse,
         };
       }),
+    );
+  }
+
+  private isStandardResponse(data: any): data is StandardResponse {
+    return (
+      data &&
+      typeof data === 'object' &&
+      'Result' in data &&
+      'Success' in data &&
+      'ReturnType' in data
     );
   }
 }
