@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { ImageModule } from './modules/image/images.module';
+import { EncryptionService } from './common/encryption/encryption.service';
 
 @Module({
   imports: [

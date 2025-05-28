@@ -11,7 +11,9 @@ import { RegisterDto } from './dto/register.dto';
 import { z } from 'zod';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { createHmac } from 'crypto';
 import { StandardResponse } from 'src/common/interfaces/response.interface';
+import { EncryptionService } from 'src/common/encryption/encryption.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +21,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly usersRepo: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   async register(
@@ -30,13 +33,21 @@ export class AuthService {
       throw new BadRequestException(validation.error);
     }
 
-    const existingUser = await this.usersRepo.findOneBy({ email: data.email });
+    const existingUser = await this.usersRepo.findOneBy({
+      emailHash: this.hashEmail(data.email),
+    });
+
     if (existingUser) throw new BadRequestException('E-mail já cadastrado');
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
+    const hashedEmail = this.hashEmail(data.email);
+
     const user = this.usersRepo.create({
       ...data,
+      name: this.encryptionService.encrypt(data.name),
+      email: this.encryptionService.encrypt(data.email),
+      emailHash: hashedEmail,
       password: hashedPassword,
     });
 
@@ -61,7 +72,9 @@ export class AuthService {
       throw new BadRequestException(validation.error);
     }
 
-    const user = await this.usersRepo.findOneBy({ email: data.email });
+    const user = await this.usersRepo.findOneBy({
+      emailHash: this.hashEmail(data.email),
+    });
 
     if (!user) throw new UnauthorizedException('Credenciais inválidas');
 
@@ -70,7 +83,11 @@ export class AuthService {
     if (!passwordValid)
       throw new UnauthorizedException('Credenciais inválidas');
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = {
+      sub: user.id,
+      email: this.encryptionService.decrypt(user.email),
+      name: this.encryptionService.decrypt(user.name),
+    };
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -82,5 +99,17 @@ export class AuthService {
       ReturnType: 1,
       ResponseTime: 0,
     };
+  }
+
+  private hashEmail(email: string) {
+    const secret = process.env.HASH_SECRET;
+
+    if (!email) {
+      throw new BadRequestException('Valor invalido para gerar o hash');
+    }
+    if (!secret) {
+      throw new BadRequestException('HASH_SECRET não configurado');
+    }
+    return createHmac('sha256', secret).update(email).digest('hex');
   }
 }

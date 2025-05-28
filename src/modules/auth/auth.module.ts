@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from 'src/modules/users/users.entity';
+import { EncryptionService } from 'src/common/encryption/encryption.service';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { User } from 'src/modules/users/users.entity';
     }),
     ConfigModule,
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, EncryptionService],
   controllers: [AuthController],
   exports: [AuthService],
 })
