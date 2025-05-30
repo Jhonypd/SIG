@@ -3,7 +3,6 @@ export interface UserData {
   id: string;
   name: string;
   email: string;
-  image?: string | null;
 }
 
 export interface userDataToken extends UserData {

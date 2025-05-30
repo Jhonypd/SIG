@@ -76,12 +76,12 @@ export class AuthService {
       emailHash: this.hashEmail(data.email),
     });
 
-    if (!user) throw new UnauthorizedException('Credenciais inválidas');
+    if (!user) throw new UnauthorizedException('Usuário e/ou senha inválidos');
 
     const passwordValid = await bcrypt.compare(data.password, user.password);
 
     if (!passwordValid)
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw new UnauthorizedException('Usuário e/ou senha inválidos');
 
     const payload = {
       sub: user.id,
