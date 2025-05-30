@@ -1,63 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Request } from 'express';
-import { userDataToken } from 'src/common/interfaces/user-data';
-import { JwtService, TokenExpiredError } from '@nestjs/jwt';
+import { RequestWithUser } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private readonly jwtService: JwtService) {
-    super();
-  }
+  canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const token = this.extractToken(request);
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context
-      .switchToHttp()
-      .getRequest<Request & { userToken: userDataToken }>();
-
-    const authHeader = request.headers['authorization'];
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       throw new UnauthorizedException('Token não fornecido');
     }
 
-    const encryptedToken = authHeader.replace('Bearer ', '').trim();
+    return super.canActivate(context);
+  }
 
-    let tokenPayload: userDataToken;
-
-    try {
-      tokenPayload = (await this.jwtService.verify(
-        encryptedToken,
-      )) as userDataToken;
-    } catch (error) {
-      if (error instanceof TokenExpiredError) {
-        throw new UnauthorizedException(
-          'Token expirado. Faça login novamente para continuar.',
-        );
-      }
-      throw new UnauthorizedException(
-        error.message || 'Token inválido ou corrompido',
-      );
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw err || new UnauthorizedException(this.getErrorMessage(info));
     }
+    return user;
+  }
 
-    const { id, email, name } = tokenPayload;
+  private extractToken(request: RequestWithUser): string | null {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : null;
+  }
 
-    if (!id) {
-      throw new UnauthorizedException('Token sem id do usuário');
+  private getErrorMessage(info: any): string {
+    if (info instanceof Error) {
+      return info.message;
     }
-    if (!email) {
-      throw new UnauthorizedException('Token sem email do usuário');
+    switch (info?.name) {
+      case 'TokenExpiredError':
+        return 'Token expirado. Faça login novamente para continuar.';
+      case 'JsonWebTokenError':
+        return 'Token inválido ou corrompido';
+      default:
+        return 'Não autorizado';
     }
-    if (!email) {
-      throw new UnauthorizedException('Token sem email do usuário');
-    }
-    if (!name) {
-      throw new UnauthorizedException('Token sem nome do usuário');
-    }
-
-    request['userToken'] = tokenPayload;
-
-    return true;
   }
 }

@@ -2,20 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { config } from 'process';
-
-interface JwtPayload {
-  sub: string;
-  email: string;
-}
+import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(config: ConfigService) {
     const jwtSecret = config.get<string>('JWT_SECRET');
-
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET não definido nas variáveis de ambiente');
+      throw new Error('JWT_SECRET não definido');
     }
 
     super({
@@ -25,7 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload) {
-    return { userId: payload.sub, email: payload.email };
+  async validate(payload: JwtPayload): Promise<JwtPayload> {
+    if (!payload.id || !payload.email || !payload.name) {
+      throw new Error('Token inválido: campos obrigatórios faltando');
+    }
+    return payload;
   }
 }

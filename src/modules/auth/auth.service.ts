@@ -84,7 +84,7 @@ export class AuthService {
       throw new UnauthorizedException('Usuário e/ou senha inválidos');
 
     const payload = {
-      sub: user.id,
+      id: user.id,
       email: this.encryptionService.decrypt(user.email),
       name: this.encryptionService.decrypt(user.name),
     };
