@@ -7,7 +7,7 @@ export class Imagem {
   id: string;
 
   @Column()
-  name: string;
+  nome: string;
 
   @Column()
   url: string;
