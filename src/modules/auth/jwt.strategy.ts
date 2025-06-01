@@ -7,22 +7,14 @@ import { JwtPayload } from 'src/common/interfaces/jwt-payload.interface';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(config: ConfigService) {
-    const jwtSecret = config.get<string>('JWT_SECRET');
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET não definido');
-    }
-
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: jwtSecret,
+      secretOrKey: config.getOrThrow<string>('JWT_SECRET'),
     });
   }
 
-  async validate(payload: JwtPayload): Promise<JwtPayload> {
-    if (!payload.id || !payload.email || !payload.name) {
-      throw new Error('Token inválido: campos obrigatórios faltando');
-    }
+  async validate(payload: JwtPayload) {
     return payload;
   }
 }

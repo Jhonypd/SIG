@@ -10,7 +10,7 @@ export const LoginDto = z.object({
     )
     .nonempty('E-mail deve ser  informado.')
     .transform((email) => email.trim()),
-  password: z
+  senha: z
     .string({ required_error: 'Senha é obrigatória' })
     .min(6, 'A senha deve ter no mínimo 6 caracteres')
     .max(100, 'A senha deve ter no máximo 100 caracteres')

@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { ReturnType, StandardResponse } from '../interfaces/response.interface';
+import { TipoRetorno, RespostaPadrao } from '../interfaces/response.interface';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -18,8 +18,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest();
 
     const status = this.getStatusCode(exception);
-    const message = this.extractMessage(exception);
-    const responseTime = Date.now() - (request.startTime || Date.now());
+    const mensagem = this.extractMessage(exception);
+    const tempoResposta = Date.now() - (request.startTime || Date.now());
 
     const logMsg = `${request.method} ${request.url} ${status}ms`;
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
@@ -28,14 +28,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
       this.logger.warn(logMsg);
     }
 
-    const errorResponse: StandardResponse = {
-      Result: null,
-      Success: false,
-      Message: message,
-      Detail: exception?.response?.error ?? 'Erro inesperado',
-      ReturnCode: status,
-      ReturnType: this.getReturnType(status),
-      ResponseTime: responseTime,
+    const errorResponse: RespostaPadrao = {
+      Resultado: null,
+      Sucesso: false,
+      Mensagem: mensagem,
+      Detalhe: exception?.response?.error ?? 'Erro inesperado',
+      CodigoRetorno: status,
+      TipoRetorno: this.getReturnType(status),
+      TempoResposta: tempoResposta,
     };
 
     response.status(status).send(errorResponse);
@@ -61,12 +61,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     return 'Falha na operação';
   }
 
-  private getReturnType(status: number): ReturnType {
-    if (status === HttpStatus.BAD_REQUEST) return ReturnType.VALIDATION_ERROR;
+  private getReturnType(status: number): TipoRetorno {
+    if (status === HttpStatus.BAD_REQUEST) return TipoRetorno.ERRO_VALIDACAO;
     if (status === HttpStatus.UNAUTHORIZED || status === HttpStatus.FORBIDDEN)
-      return ReturnType.AUTH_ERROR;
-    if (status >= 400 && status < 500) return ReturnType.BUSINESS_ERROR;
-    if (status >= 500) return ReturnType.INTERNAL_ERROR;
-    return ReturnType.SUCCESS;
+      return TipoRetorno.ERRO_AUTENTICACAO;
+    if (status >= 400 && status < 500) return TipoRetorno.ERRO_NEGOCIO;
+    if (status >= 500) return TipoRetorno.ERRO_INTERNO_SERVIDOR;
+    return TipoRetorno.RESPOSTA_SUCESSO;
   }
 }

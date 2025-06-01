@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Vehicle } from '../vehicles/vehicles.entity';
+import { Veiculo } from '../veiculos/veiculos.entity';
 
 @Entity()
-export class Image {
+export class Imagem {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -12,6 +12,6 @@ export class Image {
   @Column()
   url: string;
 
-  @ManyToOne(() => Vehicle, (vehicle) => vehicle.images)
-  vehicle: Vehicle;
+  @ManyToOne(() => Veiculo, (veiculo) => veiculo.imagens)
+  veiculo: Veiculo;
 }

@@ -1,44 +1,44 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export enum ReturnType {
-  SUCCESS = 1,
-  BUSINESS_ERROR = 2,
-  VALIDATION_ERROR = 3,
-  AUTH_ERROR = 4,
-  INTERNAL_ERROR = 5,
+export enum TipoRetorno {
+  RESPOSTA_SUCESSO = 1,
+  ERRO_NEGOCIO = 2,
+  ERRO_VALIDACAO = 3,
+  ERRO_AUTENTICACAO = 4,
+  ERRO_INTERNO_SERVIDOR = 5,
 }
 
-export class StandardResponseDto {
+export class RespostaPadraoDto {
   @ApiProperty({
     nullable: true,
     description: 'Resultado da operação',
     type: Object,
   })
-  Result: object | null;
+  Resultado: object | null;
 
   @ApiProperty({ description: 'Indica sucesso ou falha' })
-  Success: boolean;
+  Sucesso: boolean;
 
   @ApiProperty({
     nullable: true,
     description: 'Mensagem resumida',
     type: String,
   })
-  Message: string | null;
+  Mensagem: string | null;
 
   @ApiProperty({
     nullable: true,
     description: 'Detalhes adicionais',
     type: String,
   })
-  Detail: string | null;
+  Detalhe: string | null;
 
   @ApiProperty({ description: 'Código de retorno da operação' })
-  ReturnCode: number;
+  CodigoRetorno: number;
 
-  @ApiProperty({ enum: ReturnType, description: 'Tipo do retorno' })
-  ReturnType: ReturnType;
+  @ApiProperty({ enum: TipoRetorno, description: 'Tipo do retorno' })
+  TipoRetorno: TipoRetorno;
 
   @ApiProperty({ description: 'Tempo de resposta em milissegundos' })
-  ResponseTime: number;
+  TempoResposta: number;
 }

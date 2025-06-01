@@ -1,23 +1,23 @@
-import { Vehicle } from '../vehicles/vehicles.entity';
+import { Veiculo } from '../veiculos/veiculos.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class User {
+export class Usuario {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  name: string;
+  nome: string;
 
   @Column({ unique: true })
   email: string;
 
   @Column({ unique: true })
-  emailHash: string;
+  hashEmail: string;
 
   @Column()
-  password: string;
+  senha: string;
 
-  @OneToMany(() => Vehicle, (vehicle) => vehicle.user)
-  vehicles: Vehicle[];
+  @OneToMany(() => Veiculo, (veiculo) => veiculo.usuario)
+  veiculos: Veiculo[];
 }

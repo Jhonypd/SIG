@@ -6,6 +6,6 @@ export class LoginRequestDto {
   @ApiProperty({ example: 'jhony@email.com', required: false })
   email: string;
 
-  @ApiProperty({ example: '123456', required: false })
-  password: string;
+  @ApiProperty({ example: 'Admin2025', required: false })
+  senha: string;
 }

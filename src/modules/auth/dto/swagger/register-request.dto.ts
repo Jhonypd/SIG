@@ -4,11 +4,11 @@ import { ApiProperty } from '@nestjs/swagger';
 // o DTO com o ZodValidationPipe
 export class RegisterRequestDto {
   @ApiProperty({ example: 'Jhony Teste', required: false })
-  name: string;
+  nome: string;
 
   @ApiProperty({ example: 'jhony@email.com', required: false })
   email: string;
 
-  @ApiProperty({ example: '123456', required: false })
-  password: string;
+  @ApiProperty({ example: 'Admin2025', required: false })
+  senha: string;
 }

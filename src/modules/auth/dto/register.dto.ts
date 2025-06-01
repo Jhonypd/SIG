@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 export const RegisterDto = z.object({
-  name: z
+  nome: z
     .string({ required_error: 'Nome é obrigatório' })
     .min(3, 'O nome deve ter no mínimo 3 caracteres')
     .max(100, 'O nome deve ter no máximo 100 caracteres')
     .nonempty('Nome não informado.')
     .transform((name) => name.trim().replace(/\s+/g, ' '))
-    .refine((name) => name.split(' ').length >= 2, {
+    .refine((nome) => nome.split(' ').length >= 2, {
       message: 'Insira nome e sobrenome',
     }),
   email: z
@@ -16,7 +16,7 @@ export const RegisterDto = z.object({
     .min(5, 'O e-mail deve ter no mínimo 5 caracteres')
     .max(80, 'O e-mail deve ter no máximo 80 caracteres')
     .nonempty('E-mail não informado.'),
-  password: z
+  senha: z
     .string({ required_error: 'Senha é obrigatória' })
     .regex(/[A-Z]/, 'A senha deve conter pelo menos uma letra maiúscula')
     .regex(/[0-9]/, 'A senha deve conter pelo menos um número')

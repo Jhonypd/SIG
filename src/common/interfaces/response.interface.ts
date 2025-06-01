@@ -1,17 +1,17 @@
-export enum ReturnType {
-  SUCCESS = 1,
-  BUSINESS_ERROR = 2,
-  VALIDATION_ERROR = 3,
-  AUTH_ERROR = 4,
-  INTERNAL_ERROR = 5,
+export enum TipoRetorno {
+  RESPOSTA_SUCESSO = 1,
+  ERRO_NEGOCIO = 2,
+  ERRO_VALIDACAO = 3,
+  ERRO_AUTENTICACAO = 4,
+  ERRO_INTERNO_SERVIDOR = 5,
 }
 
-export interface StandardResponse<T = any> {
-  Result: T | null;
-  Success: boolean;
-  Message: string | null;
-  Detail: string | null;
-  ReturnCode: number;
-  ReturnType: ReturnType;
-  ResponseTime: number;
+export interface RespostaPadrao<T = any> {
+  Resultado: T | null;
+  Sucesso: boolean;
+  Mensagem: string | null;
+  Detalhe: string | string[] | null;
+  CodigoRetorno: number;
+  TipoRetorno: TipoRetorno;
+  TempoResposta: number;
 }

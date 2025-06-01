@@ -4,9 +4,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { VehiclesModule } from './modules/vehicles/vehicles.module';
-import { ImageModule } from './modules/image/images.module';
-import { EncryptionService } from './common/encryption/encryption.service';
+import { VeiculosModule } from './modules/veiculos/veiculo.module';
+import { ImagemModule } from './modules/imagens/imagens.module';
 
 @Module({
   imports: [
@@ -26,8 +25,8 @@ import { EncryptionService } from './common/encryption/encryption.service';
       }),
     }),
     AuthModule,
-    VehiclesModule,
-    ImageModule,
+    VeiculosModule,
+    ImagemModule,
   ],
   controllers: [AppController],
   providers: [AppService],

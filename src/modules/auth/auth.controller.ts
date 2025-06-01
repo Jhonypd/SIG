@@ -4,35 +4,35 @@ import { AuthService } from './auth.service';
 import { z } from 'zod';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { RegisterRequestDto } from './dto/register-request.dto';
-import { StandardResponseDto } from 'src/common/dto/response.dto';
-import { LoginRequestDto } from './dto/login-request.dto';
+import { RegisterRequestDto } from './dto/swagger/register-request.dto';
+import { RespostaPadraoDto } from 'src/common/dto/response.dto';
+import { LoginRequestDto } from './dto/swagger/login-request.dto';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
 
-@ApiTags('Auth')
-@Controller('auth')
+@ApiTags('Autorizacao')
+@Controller('autorizacao')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
+  @Post('registro')
   @ApiBody({ type: RegisterRequestDto, required: false })
   @ApiCreatedResponse({
     description: 'Cadastro realizado com sucesso.',
-    type: StandardResponseDto,
+    type: RespostaPadraoDto,
   })
-  async register(
+  async registro(
     @Body(new ZodValidationPipe(RegisterDto)) body: z.infer<typeof RegisterDto>,
   ) {
     return this.authService.register(body);
   }
 
-  @Post('login')
+  @Post('gerarToken')
   @ApiBody({ type: LoginRequestDto, required: false })
   @ApiCreatedResponse({
     description: 'Login realizado com sucesso.',
-    type: StandardResponseDto,
+    type: RespostaPadraoDto,
   })
-  async login(
+  async gerarToken(
     @Body(new ZodValidationPipe(LoginDto)) body: z.infer<typeof LoginDto>,
   ) {
     return this.authService.login(body);

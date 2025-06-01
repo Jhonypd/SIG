@@ -4,12 +4,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { RequestWithUser } from '../interfaces/jwt-payload.interface';
+import { Request } from 'express';
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractToken(request);
 
     if (!token) {
@@ -19,29 +20,41 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err, user, info) {
+  handleRequest<T = JwtPayload>(
+    err: any,
+    user: T,
+    info: any,
+    context: ExecutionContext,
+  ) {
     if (err || !user) {
-      throw err || new UnauthorizedException(this.getErrorMessage(info));
+      throw this.createException(info || err);
     }
+
+    // Adiciona o userToken à requisição
+    const request = context.switchToHttp().getRequest<Request>();
+    request['userToken'] = user;
+
     return user;
   }
 
-  private extractToken(request: RequestWithUser): string | null {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+  private extractToken(req: Request): string | null {
+    const [type, token] = req.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : null;
   }
 
-  private getErrorMessage(info: any): string {
-    if (info instanceof Error) {
-      return info.message;
+  private createException(error: any): UnauthorizedException {
+    if (error.name === 'TokenExpiredError') {
+      return new UnauthorizedException({
+        mensagem: 'Sessão expirada',
+        details: 'Faça login novamente para continuar',
+      });
     }
-    switch (info?.name) {
-      case 'TokenExpiredError':
-        return 'Token expirado. Faça login novamente para continuar.';
-      case 'JsonWebTokenError':
-        return 'Token inválido ou corrompido';
-      default:
-        return 'Não autorizado';
+    if (error.name === 'JsonWebTokenError') {
+      return new UnauthorizedException({
+        mensagem: 'Token inválido',
+        details: 'Erro de autenticação, tente novamente',
+      });
     }
+    return new UnauthorizedException('Não autorizado');
   }
 }

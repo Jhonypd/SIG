@@ -7,7 +7,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { ReturnType, StandardResponse } from '../interfaces/response.interface';
+import { TipoRetorno, RespostaPadrao } from '../interfaces/response.interface';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -16,52 +16,52 @@ export class ResponseInterceptor implements NestInterceptor {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<StandardResponse> {
+  ): Observable<RespostaPadrao> {
     const request = context.switchToHttp().getRequest();
     const startTime = request.startTime || Date.now();
 
     this.logger.log(`Response to ${request.method} ${request.url}`);
 
     return next.handle().pipe(
-      map((data): StandardResponse => {
+      map((data): RespostaPadrao => {
         const timeResponse = Date.now() - startTime;
 
-        // Se já for StandardResponse,
-        // verifica se o responseTime veio no data,
+        // Se já for RespostaPadrao,
+        // verifica se o tempoResposta veio no data,
         // se não veio seta o timeResponse
         if (this.isStandardResponse(data)) {
           return {
             ...data,
-            ResponseTime:
-              data.ResponseTime && data.ResponseTime > 0
-                ? data.ResponseTime
+            TempoResposta:
+              data.TempoResposta && data.TempoResposta > 0
+                ? data.TempoResposta
                 : timeResponse,
-            Message: data.Message || 'Operação realizada com sucesso',
+            Mensagem: data.Mensagem || 'Operação realizada com sucesso',
           };
         }
 
-        // Se a resposta não vier no padrão StandardResponse,
+        // Se a resposta não vier no padrão RespostaPadrao,
         //  formata e retorna
         return {
-          Result: data ?? null,
-          Success: true,
-          Message: 'Operação realizada com sucesso',
-          Detail: null,
-          ReturnCode: HttpStatus.OK,
-          ReturnType: ReturnType.SUCCESS,
-          ResponseTime: timeResponse,
+          Resultado: data ?? null,
+          Sucesso: true,
+          Mensagem: 'Operação realizada com sucesso',
+          Detalhe: null,
+          CodigoRetorno: HttpStatus.OK,
+          TipoRetorno: TipoRetorno.RESPOSTA_SUCESSO,
+          TempoResposta: timeResponse,
         };
       }),
     );
   }
 
-  private isStandardResponse(data: any): data is StandardResponse {
+  private isStandardResponse(data: any): data is RespostaPadrao {
     return (
       data &&
       typeof data === 'object' &&
-      'Result' in data &&
-      'Success' in data &&
-      'ReturnType' in data
+      'Resultado' in data &&
+      'Sucesso' in data &&
+      'TipoRetorno' in data
     );
   }
 }

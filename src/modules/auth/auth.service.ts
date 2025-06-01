@@ -4,112 +4,104 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/modules/users/users.entity';
-import { Repository } from 'typeorm';
 import { RegisterDto } from './dto/register.dto';
 import { z } from 'zod';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import { createHmac } from 'crypto';
-import { StandardResponse } from 'src/common/interfaces/response.interface';
+import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { UsuarioService } from '../usuarios/usuarios.service';
+import { handleError } from 'src/common/helper/handler-error.helper';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepo: Repository<User>,
+    private readonly usuarioService: UsuarioService,
     private readonly jwtService: JwtService,
     private readonly encryptionService: EncryptionService,
   ) {}
 
   async register(
     data: z.infer<typeof RegisterDto>,
-  ): Promise<StandardResponse<{ Id: string }>> {
-    const validation = RegisterDto.safeParse(data);
+  ): Promise<RespostaPadrao<{ Id: string }>> {
+    try {
+      const validation = RegisterDto.safeParse(data);
+      if (!validation.success) {
+        throw new BadRequestException(
+          validation.error.errors.map((e) => e.message).join(', '),
+        );
+      }
 
-    if (!validation.success) {
-      throw new BadRequestException(validation.error);
+      const existingUser = await this.usuarioService.buscarUsuario(data.email);
+
+      if (existingUser.Resultado) {
+        throw new BadRequestException('E-mail já cadastrado');
+      }
+
+      const user = await this.usuarioService.criar(data);
+
+      if (!user.Resultado) {
+        throw new BadRequestException('Erro ao cadastrar usuário');
+      }
+
+      return {
+        Resultado: { Id: user.Resultado?.id },
+        Sucesso: true,
+        Mensagem: 'Usuário cadastrado com sucesso',
+        Detalhe: null,
+        CodigoRetorno: 200,
+        TipoRetorno: 1,
+        TempoResposta: 0,
+      };
+    } catch (error) {
+      return handleError(error);
     }
-
-    const existingUser = await this.usersRepo.findOneBy({
-      emailHash: this.hashEmail(data.email),
-    });
-
-    if (existingUser) throw new BadRequestException('E-mail já cadastrado');
-
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-
-    const hashedEmail = this.hashEmail(data.email);
-
-    const user = this.usersRepo.create({
-      ...data,
-      name: this.encryptionService.encrypt(data.name),
-      email: this.encryptionService.encrypt(data.email),
-      emailHash: hashedEmail,
-      password: hashedPassword,
-    });
-
-    await this.usersRepo.save(user);
-
-    return {
-      Result: { Id: user.id },
-      Success: true,
-      Message: 'Usuário cadastrado com sucesso',
-      Detail: null,
-      ReturnCode: 200,
-      ReturnType: 1,
-      ResponseTime: 0,
-    };
   }
 
   async login(
     data: z.infer<typeof LoginDto>,
-  ): Promise<StandardResponse<{ Token: string }>> {
-    const validation = LoginDto.safeParse(data);
-    if (!validation.success) {
-      throw new BadRequestException(validation.error);
+  ): Promise<RespostaPadrao<{ Token: string }>> {
+    try {
+      const validation = LoginDto.safeParse(data);
+      if (!validation.success) {
+        throw new BadRequestException(
+          validation.error.errors.map((e) => e.message).join(', '),
+        );
+      }
+
+      const usuario = await this.usuarioService.buscarUsuario(data.email);
+
+      if (!usuario.Resultado) {
+        throw new UnauthorizedException('Usuário e/ou senha inválidos');
+      }
+
+      const senhaValida = await bcrypt.compare(
+        data.senha,
+        usuario.Resultado.senha,
+      );
+
+      if (!senhaValida) {
+        throw new UnauthorizedException('Usuário e/ou senha inválidos');
+      }
+
+      const payload = {
+        id: usuario.Resultado.id,
+        email: this.encryptionService.decrypt(usuario.Resultado.email),
+        name: this.encryptionService.decrypt(usuario.Resultado.nome),
+      };
+      const token = await this.jwtService.signAsync(payload);
+
+      return {
+        Resultado: { Token: token },
+        Sucesso: true,
+        Mensagem: 'Login realizado com sucesso',
+        Detalhe: null,
+        CodigoRetorno: 200,
+        TipoRetorno: 1,
+        TempoResposta: 0,
+      };
+    } catch (error) {
+      return handleError(error);
     }
-
-    const user = await this.usersRepo.findOneBy({
-      emailHash: this.hashEmail(data.email),
-    });
-
-    if (!user) throw new UnauthorizedException('Usuário e/ou senha inválidos');
-
-    const passwordValid = await bcrypt.compare(data.password, user.password);
-
-    if (!passwordValid)
-      throw new UnauthorizedException('Usuário e/ou senha inválidos');
-
-    const payload = {
-      id: user.id,
-      email: this.encryptionService.decrypt(user.email),
-      name: this.encryptionService.decrypt(user.name),
-    };
-    const token = await this.jwtService.signAsync(payload);
-
-    return {
-      Result: { Token: token },
-      Success: true,
-      Message: 'Login realizado com sucesso',
-      Detail: null,
-      ReturnCode: 200,
-      ReturnType: 1,
-      ResponseTime: 0,
-    };
-  }
-
-  private hashEmail(email: string) {
-    const secret = process.env.HASH_SECRET;
-
-    if (!email) {
-      throw new BadRequestException('Valor invalido para gerar o hash');
-    }
-    if (!secret) {
-      throw new BadRequestException('HASH_SECRET não configurado');
-    }
-    return createHmac('sha256', secret).update(email).digest('hex');
   }
 }
