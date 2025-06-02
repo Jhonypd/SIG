@@ -5,18 +5,18 @@ import { ImagemService } from 'src/modules/imagens/imagens.service';
 import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 import { z } from 'zod';
 import { BadRequestException } from '@nestjs/common';
-import { formatException } from 'src/common/helper/formatarException.helper';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
 import { VeiculoSchemaDto } from '../dto/veiculo.dto';
 import { BuscarVeiculoService } from './buscar-veiculo.service';
 import { CriarVeiculoDto } from '../dto/criar-veiculo.dto';
+import { handleError } from 'src/common/helper/handler-error.helper';
 
 export class CriarVeiculoService {
   constructor(
     @InjectRepository(Veiculo)
     private readonly veiculoRepository: Repository<Veiculo>,
     private readonly imageService: ImagemService,
-    private readonly buscarUmVeiculoService: BuscarVeiculoService,
+    private readonly buscarVeiculoService: BuscarVeiculoService,
     private readonly encryptionService: EncryptionService,
   ) {}
 
@@ -51,19 +51,14 @@ export class CriarVeiculoService {
         );
       }
 
-      const response = await this.buscarUmVeiculoService.execute({
+      const response = await this.buscarVeiculoService.execute({
         veiculoId: veiculoSalvo.id,
         usuarioId: data.lojistaId,
       });
 
       return {
         Resultado: {
-          ...response,
-          usuario: {
-            ...response.usuario,
-            nome: this.encryptionService.decrypt(response.usuario.nome),
-            email: this.encryptionService.decrypt(response.usuario.email),
-          },
+          ...(response.Resultado ? response.Resultado : veiculoSalvo),
         },
         Sucesso: true,
         Mensagem: 'Veículo criado com sucesso',
@@ -73,17 +68,7 @@ export class CriarVeiculoService {
         TempoResposta: 0,
       };
     } catch (error) {
-      const detalhe = formatException(error);
-
-      return {
-        Resultado: null,
-        Sucesso: false,
-        Mensagem: 'Falha ao criar veículo',
-        Detalhe: detalhe,
-        CodigoRetorno: 500,
-        TipoRetorno: 1,
-        TempoResposta: 0,
-      };
+      return handleError(error);
     }
   }
 }

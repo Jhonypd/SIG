@@ -2,41 +2,41 @@ import { z } from 'zod';
 
 export const FilterVehicleDtoSchema = z
   .object({
-    brand: z
+    marca: z
       .string()
       .min(2, 'Marca deve ter pelo menos 2 caracteres')
       .optional(),
-    model: z
+    modelo: z
       .string()
       .min(2, 'Modelo deve ter pelo menos 2 caracteres')
       .optional(),
-    minYear: z
+    minAno: z
       .number()
       .int()
       .min(1900)
       .max(new Date().getFullYear() + 1)
       .optional(),
-    maxYear: z
+    maxAno: z
       .number()
       .int()
       .min(1900)
       .max(new Date().getFullYear() + 1)
       .optional(),
-    minPrice: z
+    minPreco: z
       .number()
       .min(0, 'Preço mínimo não pode ser negativo')
       .optional(),
-    maxPrice: z
+    maxPreco: z
       .number()
       .min(0, 'Preço máximo não pode ser negativo')
       .optional(),
-    keyword: z.string().optional(), // Para busca geral (marca, modelo, descrição)
+    palavrasChave: z.string().optional(),
+    lojistaId: z.string().uuid(),
   })
   .refine(
     (data) => {
-      // Valida se minPrice <= maxPrice quando ambos existem
-      if (data.minPrice && data.maxPrice) {
-        return data.minPrice <= data.maxPrice;
+      if (data.minPreco && data.maxPreco) {
+        return data.minPreco <= data.maxPreco;
       }
       return true;
     },
