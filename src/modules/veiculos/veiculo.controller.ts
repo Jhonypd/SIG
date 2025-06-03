@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Query,
+  UsePipes,
 } from '@nestjs/common';
 import { VeiculoService } from './veiculo.service';
 import {
@@ -16,6 +17,7 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -29,6 +31,7 @@ import { FiltroVeiculoSchemaDto } from './dto/filtros-veiculo.dto';
 import { z } from 'zod';
 import { FiltroVeiculoRequestDto } from './dto/swagger/filtro-veiculo-request.dto';
 import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
+import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -41,20 +44,18 @@ export class VehiclesController {
     private readonly buscarTodosVeiculoService: BuscarTodosVeiculosService,
   ) {}
 
-  @Get()
+  @Get('todos')
   @ApiCreatedResponse({
     description: 'Operação realizada com sucesso.',
     type: RespostaPadraoDto,
   })
-  @ApiParam({ name: 'filter', type: FiltroVeiculoRequestDto })
+  @ApiQuery({ type: FiltroVeiculoRequestDto, required: false })
   buscarTodos(
-    filter: Omit<z.infer<typeof FiltroVeiculoSchemaDto>, 'lojistaId'>,
+    @Query(new ZodValidationPipe(FiltroVeiculoSchemaDto))
+    filtros: Omit<z.infer<typeof FiltroVeiculoSchemaDto>, 'lojistaId'>,
     @getUserToken() userToken: UsuarioData,
   ) {
-    return this.buscarTodosVeiculoService.execute({
-      ...filter,
-      lojistaId: userToken.id,
-    });
+    return this.buscarTodosVeiculoService.execute(filtros, userToken.id);
   }
 
   @Get(':id')

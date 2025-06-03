@@ -25,5 +25,6 @@ export interface RespostaPaginada<T = any>
     TotalPaginas: number;
     TotalRegistros: number;
     TotalRegistrosFiltrados: number;
+    PaginaAtual: number;
   };
 }

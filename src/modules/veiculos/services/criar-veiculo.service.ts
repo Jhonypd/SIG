@@ -23,52 +23,48 @@ export class CriarVeiculoService {
   async create(
     data: z.infer<typeof CriarVeiculoDto>,
   ): Promise<RespostaPadrao<z.infer<typeof VeiculoSchemaDto>>> {
-    try {
-      const validation = CriarVeiculoDto.safeParse(data);
+    const validation = CriarVeiculoDto.safeParse(data);
 
-      if (!validation.success) {
-        throw new BadRequestException(validation.error);
-      }
-
-      const Veiculo = this.veiculoRepository.create({
-        ...data,
-        usuario: { id: data.lojistaId },
-        imagens: [],
-      });
-
-      const veiculoSalvo = await this.veiculoRepository.save(Veiculo);
-
-      if (data.imagens && data.imagens.length > 0) {
-        await Promise.all(
-          data.imagens.map(
-            async (imagem) =>
-              await this.imageService.criar({
-                url: imagem.url,
-                veiculoId: veiculoSalvo.id,
-                nome: veiculoSalvo.modelo,
-              }),
-          ),
-        );
-      }
-
-      const response = await this.buscarVeiculoService.execute({
-        veiculoId: veiculoSalvo.id,
-        usuarioId: data.lojistaId,
-      });
-
-      return {
-        Resultado: {
-          ...(response.Resultado ? response.Resultado : veiculoSalvo),
-        },
-        Sucesso: true,
-        Mensagem: 'Veículo criado com sucesso',
-        Detalhe: null,
-        CodigoRetorno: 200,
-        TipoRetorno: 1,
-        TempoResposta: 0,
-      };
-    } catch (error) {
-      return handleError(error);
+    if (!validation.success) {
+      throw new BadRequestException(validation.error);
     }
+
+    const Veiculo = this.veiculoRepository.create({
+      ...data,
+      usuario: { id: data.lojistaId },
+      imagens: [],
+    });
+
+    const veiculoSalvo = await this.veiculoRepository.save(Veiculo);
+
+    if (data.imagens && data.imagens.length > 0) {
+      await Promise.all(
+        data.imagens.map(
+          async (imagem) =>
+            await this.imageService.criar({
+              url: imagem.url,
+              veiculoId: veiculoSalvo.id,
+              nome: veiculoSalvo.modelo,
+            }),
+        ),
+      );
+    }
+
+    const response = await this.buscarVeiculoService.execute({
+      veiculoId: veiculoSalvo.id,
+      usuarioId: data.lojistaId,
+    });
+
+    return {
+      Resultado: {
+        ...(response.Resultado ? response.Resultado : veiculoSalvo),
+      },
+      Sucesso: true,
+      Mensagem: 'Veículo criado com sucesso',
+      Detalhe: null,
+      CodigoRetorno: 200,
+      TipoRetorno: 1,
+      TempoResposta: 0,
+    };
   }
 }

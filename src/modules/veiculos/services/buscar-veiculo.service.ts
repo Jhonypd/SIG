@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { z } from 'zod';
 import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 import { VeiculoSchemaDto } from '../dto/veiculo.dto';
-import { handleError } from 'src/common/helper/handler-error.helper';
 
 @Injectable()
 export class BuscarVeiculoService {
@@ -18,29 +17,25 @@ export class BuscarVeiculoService {
     veiculoId: string;
     usuarioId: string;
   }): Promise<RespostaPadrao<z.infer<typeof VeiculoSchemaDto>>> {
-    try {
-      const veiculo = await this.veiculoRepository.findOne({
-        where: { id: data.veiculoId, usuario: { id: data.usuarioId } },
-        relations: ['imagens', 'usuario'],
-      });
+    const veiculo = await this.veiculoRepository.findOne({
+      where: { id: data.veiculoId, usuario: { id: data.usuarioId } },
+      relations: ['imagens', 'usuario'],
+    });
 
-      if (!veiculo) {
-        throw new NotFoundException('Veículo não encontrado');
-      }
-
-      return {
-        Resultado: {
-          ...veiculo,
-        },
-        Sucesso: true,
-        Mensagem: 'Veículo criado com sucesso',
-        Detalhe: null,
-        CodigoRetorno: 200,
-        TipoRetorno: 1,
-        TempoResposta: 0,
-      };
-    } catch (error) {
-      return handleError(error);
+    if (!veiculo) {
+      throw new NotFoundException('Veículo não encontrado');
     }
+
+    return {
+      Resultado: {
+        ...veiculo,
+      },
+      Sucesso: true,
+      Mensagem: 'Veículo criado com sucesso',
+      Detalhe: null,
+      CodigoRetorno: 200,
+      TipoRetorno: 1,
+      TempoResposta: 0,
+    };
   }
 }

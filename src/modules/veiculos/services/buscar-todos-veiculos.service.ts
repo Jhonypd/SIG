@@ -5,7 +5,6 @@ import { Veiculo } from '../veiculos.entity';
 import { RespostaPaginada } from 'src/common/interfaces/response.interface';
 import { FiltroVeiculoSchemaDto } from '../dto/filtros-veiculo.dto';
 import { z } from 'zod';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
 
 @Injectable()
 export class BuscarTodosVeiculosService {
@@ -16,9 +15,10 @@ export class BuscarTodosVeiculosService {
 
   async execute(
     filtros: z.infer<typeof FiltroVeiculoSchemaDto>,
+    lojistaId: string,
   ): Promise<RespostaPaginada<Veiculo>> {
-    new ZodValidationPipe(FiltroVeiculoSchemaDto);
-
+    try {
+    } catch (error) {}
     const {
       marca,
       modelo,
@@ -27,7 +27,6 @@ export class BuscarTodosVeiculosService {
       minPreco,
       maxPreco,
       palavrasChave,
-      lojistaId,
       pagina,
       limite,
     } = filtros;
@@ -39,11 +38,15 @@ export class BuscarTodosVeiculosService {
       .where('usuario.id = :lojistaId', { lojistaId });
 
     if (marca) {
-      qb.andWhere('veiculo.marca ILIKE :marca', { marca: `%${marca}%` });
+      qb.andWhere('LOWER(veiculo.marca) LIKE LOWER(:marca)', {
+        marca: `%${marca}%`,
+      });
     }
 
     if (modelo) {
-      qb.andWhere('veiculo.modelo ILIKE :modelo', { modelo: `%${modelo}%` });
+      qb.andWhere('LOWER(veiculo.modelo) LIKE LOWER(:modelo)', {
+        modelo: `%${modelo}%`,
+      });
     }
 
     if (minAno && maxAno) {
@@ -87,6 +90,7 @@ export class BuscarTodosVeiculosService {
         TotalPaginas: Math.ceil(total / limite),
         TotalRegistros: total,
         TotalRegistrosFiltrados: total,
+        PaginaAtual: pagina,
       },
       Sucesso: true,
       CodigoRetorno: 200,

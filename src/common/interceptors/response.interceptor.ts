@@ -19,8 +19,7 @@ export class ResponseInterceptor implements NestInterceptor {
   ): Observable<RespostaPadrao> {
     const request = context.switchToHttp().getRequest();
     const startTime = request.startTime || Date.now();
-
-    this.logger.log(`Response to ${request.method} ${request.url}`);
+    this.logger.log(`Response para ${request.method} ${request.url}`);
 
     return next.handle().pipe(
       map((data): RespostaPadrao => {

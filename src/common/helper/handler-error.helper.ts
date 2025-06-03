@@ -1,10 +1,16 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { RespostaPadrao, TipoRetorno } from '../interfaces/response.interface';
 
 export function handleError<T>(error: any): RespostaPadrao<T> {
   let statusCode = 500;
   let tipoRetorno = TipoRetorno.ERRO_INTERNO_SERVIDOR;
   let message = 'Ocorreu um erro interno';
+
+  new Logger(handleError.name).error(error);
 
   if (error instanceof BadRequestException) {
     statusCode = error.getStatus();

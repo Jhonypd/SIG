@@ -10,31 +10,30 @@ export const FiltroVeiculoSchemaDto = z
       .string()
       .min(2, 'Modelo deve ter pelo menos 2 caracteres')
       .optional(),
-    minAno: z
+    minAno: z.coerce
       .number()
       .int()
       .min(1900)
       .max(new Date().getFullYear() + 1)
       .optional(),
-    maxAno: z
+    maxAno: z.coerce
       .number()
       .int()
       .min(1900)
       .max(new Date().getFullYear() + 1)
       .optional(),
-    minPreco: z
+    minPreco: z.coerce
       .number()
       .min(0, 'Preço mínimo não pode ser negativo')
       .optional(),
-    maxPreco: z
+    maxPreco: z.coerce
       .number()
       .min(0, 'Preço máximo não pode ser negativo')
       .optional(),
     palavrasChave: z.string().optional(),
 
-    lojistaId: z.string().uuid(),
-    pagina: z.number().min(0).default(0),
-    limite: z.number().min(1).max(100).default(20),
+    pagina: z.coerce.number().min(0).default(0),
+    limite: z.coerce.number().min(1).max(100).default(20),
   })
   .refine(
     (data) => {
@@ -60,5 +59,3 @@ export const FiltroVeiculoSchemaDto = z
       path: ['minPreco'],
     },
   );
-
-
