@@ -9,7 +9,7 @@ export enum TipoRetorno {
 export interface RespostaPadrao<T = any> {
   Resultado: T | null;
   Sucesso: boolean;
-  Mensagem: string | null;
+  Mensagem: string | string[] | null;
   Detalhe: string | string[] | null;
   CodigoRetorno: number;
   TipoRetorno: TipoRetorno;
@@ -20,7 +20,7 @@ export interface RespostaPaginada<T = any>
   extends Omit<RespostaPadrao<T>, 'Resultado'>,
     RespostaPadrao {
   Resultado: {
-    GridList: T[];
+    ListaGrid: T[];
     ItensPorPagina: number;
     TotalPaginas: number;
     TotalRegistros: number;

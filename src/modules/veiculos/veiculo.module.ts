@@ -7,6 +7,7 @@ import { CriarVeiculoService } from './services/criar-veiculo.service';
 import { ImagemModule } from '../imagens/imagens.module';
 import { BuscarVeiculoService } from './services/buscar-veiculo.service';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { BuscarTodosVeiculosService } from './services/buscar-todos-veiculos.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Veiculo]), ImagemModule],
@@ -15,6 +16,7 @@ import { EncryptionService } from 'src/common/encryption/encryption.service';
     CriarVeiculoService,
     BuscarVeiculoService,
     EncryptionService,
+    BuscarTodosVeiculosService,
   ],
   controllers: [VehiclesController],
 })

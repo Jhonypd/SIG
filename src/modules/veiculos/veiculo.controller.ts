@@ -15,18 +15,21 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RespostaPadraoDto } from 'src/common/dto/response.dto';
-import { FilterVehicleDto } from './dto/swagger/filter-request.dto';
-import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
 import { UsuarioData } from 'src/common/interfaces/usuario-data';
 import { CriarVeiculoService } from './services/criar-veiculo.service';
 import { BuscarVeiculoService } from './services/buscar-veiculo.service';
 import { CriarVeiculoRequestDto } from './dto/swagger/criar-veiculo-request.dto';
+import { BuscarTodosVeiculosService } from './services/buscar-todos-veiculos.service';
+import { FiltroVeiculoSchemaDto } from './dto/filtros-veiculo.dto';
+import { z } from 'zod';
+import { FiltroVeiculoRequestDto } from './dto/swagger/filtro-veiculo-request.dto';
+import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
 
-@ApiTags('Veiculos')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Controller('veiculos')
@@ -35,6 +38,7 @@ export class VehiclesController {
     private readonly vehiclesService: VeiculoService,
     private readonly criarVeiculoService: CriarVeiculoService,
     private readonly buscarVeiculoService: BuscarVeiculoService,
+    private readonly buscarTodosVeiculoService: BuscarTodosVeiculosService,
   ) {}
 
   @Get()
@@ -42,12 +46,15 @@ export class VehiclesController {
     description: 'Operação realizada com sucesso.',
     type: RespostaPadraoDto,
   })
+  @ApiParam({ name: 'filter', type: FiltroVeiculoRequestDto })
   buscarTodos(
-    @Request() req,
-    @Query() filter: FilterVehicleDto,
+    filter: Omit<z.infer<typeof FiltroVeiculoSchemaDto>, 'lojistaId'>,
     @getUserToken() userToken: UsuarioData,
   ) {
-    return this.vehiclesService.buscarTodos(userToken.id);
+    return this.buscarTodosVeiculoService.execute({
+      ...filter,
+      lojistaId: userToken.id,
+    });
   }
 
   @Get(':id')
@@ -55,9 +62,14 @@ export class VehiclesController {
     description: 'Veículo encontrado com sucesso.',
     type: RespostaPadraoDto,
   })
-  buscarVeiculo(@Param('id') id: string, @Request() req) {
-    const usuarioId = req.userToken.id;
-    return this.buscarVeiculoService.execute({ veiculoId: id, usuarioId });
+  buscarVeiculo(
+    @Param('id') id: string,
+    @getUserToken() userToken: UsuarioData,
+  ) {
+    return this.buscarVeiculoService.execute({
+      usuarioId: userToken.id,
+      veiculoId: id,
+    });
   }
 
   @Post('inserir')

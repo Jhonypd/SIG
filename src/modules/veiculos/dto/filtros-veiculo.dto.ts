@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const FilterVehicleDtoSchema = z
+export const FiltroVeiculoSchemaDto = z
   .object({
     marca: z
       .string()
@@ -31,8 +31,23 @@ export const FilterVehicleDtoSchema = z
       .min(0, 'Preço máximo não pode ser negativo')
       .optional(),
     palavrasChave: z.string().optional(),
+
     lojistaId: z.string().uuid(),
+    pagina: z.number().min(0).default(0),
+    limite: z.number().min(1).max(100).default(20),
   })
+  .refine(
+    (data) => {
+      if (data.minAno && data.maxAno) {
+        return data.minAno <= data.maxAno;
+      }
+      return true;
+    },
+    {
+      message: 'Ano mínimo não pode ser maior que o ano máximo',
+      path: ['minAno'],
+    },
+  )
   .refine(
     (data) => {
       if (data.minPreco && data.maxPreco) {
@@ -42,6 +57,8 @@ export const FilterVehicleDtoSchema = z
     },
     {
       message: 'Preço mínimo não pode ser maior que o preço máximo',
-      path: ['minPrice'],
+      path: ['minPreco'],
     },
   );
+
+

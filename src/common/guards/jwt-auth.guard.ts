@@ -14,7 +14,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const token = this.extractToken(request);
 
     if (!token) {
-      throw new UnauthorizedException('Token não fornecido');
+      throw new UnauthorizedException({
+        message: 'Token não fornecido',
+        error: 'Usuário não autenticado',
+      });
     }
 
     return super.canActivate(context);
@@ -45,14 +48,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   private createException(error: any): UnauthorizedException {
     if (error.name === 'TokenExpiredError') {
       return new UnauthorizedException({
-        mensagem: 'Sessão expirada',
-        details: 'Faça login novamente para continuar',
+        message: 'Sessão expirada',
+        error: 'Faça login novamente para continuar',
       });
     }
     if (error.name === 'JsonWebTokenError') {
       return new UnauthorizedException({
-        mensagem: 'Token inválido',
-        details: 'Erro de autenticação, tente novamente',
+        message: 'Token inválido',
+        error: 'Erro de autenticação, tente novamente',
       });
     }
     return new UnauthorizedException('Não autorizado');
