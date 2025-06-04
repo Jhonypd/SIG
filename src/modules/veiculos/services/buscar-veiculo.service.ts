@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Veiculo } from '../veiculos.entity';
 import { Repository } from 'typeorm';
 import { z } from 'zod';
-import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 import {
   UsuarioDto,
   UsuarioSchema,
+  VeiculoBuscasSchemaDto,
   VeiculoSchemaDto,
 } from '../dto/veiculo.dto';
 import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
@@ -20,10 +20,9 @@ export class BuscarVeiculoService {
     private readonly encryptionService: EncryptionService,
   ) {}
 
-  async execute(data: {
-    veiculoId: string;
-    usuarioId: string;
-  }): Promise<RespostaPadrao<z.infer<typeof VeiculoSchemaDto>>> {
+  async execute(
+    data: z.infer<typeof VeiculoBuscasSchemaDto>,
+  ): Promise<z.infer<typeof VeiculoSchemaDto>> {
     const veiculo = await this.veiculoRepository.findOne({
       where: { id: data.veiculoId, usuario: { id: data.usuarioId } },
       relations: ['imagens', 'usuario'],
@@ -40,17 +39,6 @@ export class BuscarVeiculoService {
       ['email', 'nome'],
     );
 
-    return {
-      Resultado: {
-        ...veiculo,
-        usuario: usuario,
-      },
-      Sucesso: true,
-      Mensagem: 'Veículo criado com sucesso',
-      Detalhe: null,
-      CodigoRetorno: 200,
-      TipoRetorno: 1,
-      TempoResposta: 0,
-    };
+    return { ...veiculo, usuario: usuario };
   }
 }

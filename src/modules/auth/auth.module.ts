@@ -6,9 +6,12 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
 import { UsersModule } from '../usuarios/usuarios.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Usuario } from '../usuarios/usuarios.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Usuario]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

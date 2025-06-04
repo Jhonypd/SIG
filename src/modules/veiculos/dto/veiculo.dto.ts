@@ -31,15 +31,21 @@ export const VeiculoSchemaDto = z.object({
       }),
     )
     .optional(),
-  usuario: z
-    .object({
-      id: z.string(),
-      nome: z.string(),
-      email: z.string(),
-    })
-    ,
+  usuario: z.object({
+    id: z.string(),
+    nome: z.string(),
+    email: z.string(),
+  }),
 });
 
+export const VeiculoBuscasSchemaDto = z.object({
+  veiculoId: z
+    .string({ required_error: 'Id do veiculo é obrigatório' })
+    .uuid('Id com formato inválido'),
+  usuarioId: z
+    .string({ required_error: 'Id do usuário é obrigatório' })
+    .uuid('Id com formato inválido'),
+});
 
 export const UsuarioSchema = VeiculoSchemaDto.shape.usuario;
- export    type UsuarioDto = z.infer<typeof UsuarioSchema>;
+export type UsuarioDto = z.infer<typeof UsuarioSchema>;

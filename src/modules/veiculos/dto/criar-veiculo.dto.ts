@@ -1,7 +1,7 @@
 import { CriarImagemDto } from 'src/modules/imagens/dto/criar-imagem.dto';
 import { z } from 'zod';
 
-export const CriarVeiculoDto = z.object({
+export const CriarVeiculoSchemaDto = z.object({
   marca: z
     .string({ message: 'Apenas texto' })
     .min(3, 'Marca deve ter pelo menos 3 caracteres'),
@@ -17,6 +17,6 @@ export const CriarVeiculoDto = z.object({
     .number({ message: 'Apenas números são aceitos no preço' })
     .positive({ message: 'O preço deve ser maior que zero' }),
   descricao: z.string({ message: 'Apenas texto' }).optional(),
-  lojistaId: z.string().uuid({ message: 'Id inválido' }),
+
   imagens: z.array(CriarImagemDto.pick({ url: true })).optional(),
 });

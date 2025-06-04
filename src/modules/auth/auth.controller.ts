@@ -23,7 +23,7 @@ export class AuthController {
   async registro(
     @Body(new ZodValidationPipe(RegisterDto)) body: z.infer<typeof RegisterDto>,
   ) {
-    return this.authService.register(body);
+    return this.authService.registrar(body);
   }
 
   @Post('gerarToken')
@@ -35,6 +35,6 @@ export class AuthController {
   async gerarToken(
     @Body(new ZodValidationPipe(LoginDto)) body: z.infer<typeof LoginDto>,
   ) {
-    return this.authService.login(body);
+    return this.authService.gerarTokenLogin(body);
   }
 }

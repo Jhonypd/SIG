@@ -16,15 +16,11 @@ export interface RespostaPadrao<T = any> {
   TempoResposta: number;
 }
 
-export interface RespostaPaginada<T = any>
-  extends Omit<RespostaPadrao<T>, 'Resultado'>,
-    RespostaPadrao {
-  Resultado: {
-    ListaGrid: T[];
-    ItensPorPagina: number;
-    TotalPaginas: number;
-    TotalRegistros: number;
-    TotalRegistrosFiltrados: number;
-    PaginaAtual: number;
-  };
+export interface RespostaPaginada<T = any> {
+  ListaGrid: T[];
+  ItensPorPagina: number;
+  TotalPaginas: number;
+  TotalRegistros: number;
+  TotalRegistrosFiltrados: number;
+  PaginaAtual: number;
 }

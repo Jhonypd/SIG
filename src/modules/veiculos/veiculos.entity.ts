@@ -31,6 +31,9 @@ export class Veiculo {
   @ManyToOne(() => Usuario, (usuario) => usuario.veiculos)
   usuario: Usuario;
 
-  @OneToMany(() => Imagem, (imagem) => imagem.veiculo)
+  @OneToMany(() => Imagem, (imagem) => imagem.veiculo, {
+    cascade: ['remove'],
+    onDelete: 'CASCADE',
+  })
   imagens: Imagem[];
 }

@@ -11,7 +11,6 @@ import {
   Query,
   UsePipes,
 } from '@nestjs/common';
-import { VeiculoService } from './veiculo.service';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -32,16 +31,23 @@ import { z } from 'zod';
 import { FiltroVeiculoRequestDto } from './dto/swagger/filtro-veiculo-request.dto';
 import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
+import { DeleteVeiculoService } from './services/delete-veiculo.service';
+import { AlterarVeiculoService } from './services/alterar-veiculo.service';
+import { CriarVeiculoSchemaDto } from './dto/criar-veiculo.dto';
+import { VeiculoSchemaDto } from './dto/veiculo.dto';
+import { AtualizaVeiculoDto } from './dto/atualiza-veiculo.dto';
+import { AtualizaVeiculoRequestDto } from './dto/swagger/alterar-veiculo-request.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Controller('veiculos')
-export class VehiclesController {
+export class VeiculosController {
   constructor(
-    private readonly vehiclesService: VeiculoService,
     private readonly criarVeiculoService: CriarVeiculoService,
     private readonly buscarVeiculoService: BuscarVeiculoService,
     private readonly buscarTodosVeiculoService: BuscarTodosVeiculosService,
+    private readonly deleteVeiculoService: DeleteVeiculoService,
+    private readonly alterarVeiculoService: AlterarVeiculoService,
   ) {}
 
   @Get('todos')
@@ -50,9 +56,9 @@ export class VehiclesController {
     type: RespostaPadraoDto,
   })
   @ApiQuery({ type: FiltroVeiculoRequestDto, required: false })
-  buscarTodos(
+  buscarTodosVeiculos(
     @Query(new ZodValidationPipe(FiltroVeiculoSchemaDto))
-    filtros: Omit<z.infer<typeof FiltroVeiculoSchemaDto>, 'lojistaId'>,
+    filtros: z.infer<typeof FiltroVeiculoSchemaDto>,
     @getUserToken() userToken: UsuarioData,
   ) {
     return this.buscarTodosVeiculoService.execute(filtros, userToken.id);
@@ -79,21 +85,43 @@ export class VehiclesController {
     description: 'Veículo cadastrado com sucesso.',
     type: RespostaPadraoDto,
   })
-  create(@Body() createVehicleDto, @getUserToken() userToken: UsuarioData) {
-    return this.criarVeiculoService.execute({
-      ...createVehicleDto,
-      lojistaId: userToken.id,
-    });
+  criarVeiculo(
+    @Body(new ZodValidationPipe(CriarVeiculoSchemaDto))
+    veiculo: z.infer<typeof CriarVeiculoSchemaDto>,
+    @getUserToken() userToken: UsuarioData,
+  ) {
+    return this.criarVeiculoService.execute(veiculo, userToken.id);
   }
 
-  @Put('alterar/:id')
+  @Put('alterar')
+  @ApiBody({ type: AtualizaVeiculoRequestDto, required: false })
   @ApiCreatedResponse({
     description: 'Veículo atualizado com sucesso.',
     type: RespostaPadraoDto,
   })
-  alterar(@Param('id') id: string, @Body() updateVehicleDto, @Request() req) {
-    const userId = req.userToken.id;
-    return this.vehiclesService.execute(id, userId, updateVehicleDto);
+  alterarVeiculo(
+    @Param('id') id: z.infer<typeof VeiculoSchemaDto.shape.usuario.shape.id>,
+    @Body(new ZodValidationPipe(AtualizaVeiculoDto))
+    body: z.infer<typeof AtualizaVeiculoDto>,
+    @getUserToken() userToken: UsuarioData,
+  ) {
+    return this.alterarVeiculoService.execute({
+      veiculoId: id,
+      lojistaId: userToken.id,
+
+      veiculo: {
+        ...body.veiculo,
+        descricao: body.veiculo.descricao ? body.veiculo.descricao : undefined,
+        imagensIncluir:
+          body.veiculo.imagensIncluir && body.veiculo.imagensIncluir?.length > 0
+            ? body.veiculo.imagensIncluir
+            : [],
+        imagensExcluir:
+          body.veiculo.imagensExcluir && body.veiculo.imagensExcluir?.length > 0
+            ? body.veiculo.imagensExcluir
+            : [],
+      },
+    });
   }
 
   @Delete('deletar/:id')
@@ -101,8 +129,10 @@ export class VehiclesController {
     description: 'Veículo removido com sucesso.',
     type: RespostaPadraoDto,
   })
-  deletar(@Param('id') id: string, @Request() req) {
-    const userId = req.userToken.id;
-    return this.vehiclesService.remove(id, userId);
+  deletar(@Param('id') id: string, @getUserToken() userToken: UsuarioData) {
+    return this.deleteVeiculoService.execute({
+      veiculoId: id,
+      usuarioId: userToken.id,
+    });
   }
 }

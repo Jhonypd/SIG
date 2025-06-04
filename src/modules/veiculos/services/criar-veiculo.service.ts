@@ -2,17 +2,11 @@ import { Repository } from 'typeorm';
 import { Veiculo } from '../veiculos.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ImagemService } from 'src/modules/imagens/imagens.service';
-import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 import { z } from 'zod';
 import { BadRequestException } from '@nestjs/common';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
-import {
-  UsuarioDto,
-  UsuarioSchema,
-  VeiculoSchemaDto,
-} from '../dto/veiculo.dto';
+import { VeiculoBuscasSchemaDto, VeiculoSchemaDto } from '../dto/veiculo.dto';
 import { BuscarVeiculoService } from './buscar-veiculo.service';
-import { CriarVeiculoDto } from '../dto/criar-veiculo.dto';
+import { CriarVeiculoSchemaDto } from '../dto/criar-veiculo.dto';
 
 export class CriarVeiculoService {
   constructor(
@@ -20,13 +14,13 @@ export class CriarVeiculoService {
     private readonly veiculoRepository: Repository<Veiculo>,
     private readonly imageService: ImagemService,
     private readonly buscarVeiculoService: BuscarVeiculoService,
-    private readonly encryptionService: EncryptionService,
   ) {}
 
   async execute(
-    data: z.infer<typeof CriarVeiculoDto>,
-  ): Promise<RespostaPadrao<z.infer<typeof VeiculoSchemaDto>>> {
-    const validation = CriarVeiculoDto.safeParse(data);
+    data: z.infer<typeof CriarVeiculoSchemaDto>,
+    lojistaId: z.infer<typeof VeiculoBuscasSchemaDto>['usuarioId'],
+  ): Promise<z.infer<typeof VeiculoSchemaDto>> {
+    const validation = CriarVeiculoSchemaDto.safeParse(data);
 
     if (!validation.success) {
       throw new BadRequestException(validation.error);
@@ -34,7 +28,7 @@ export class CriarVeiculoService {
 
     const Veiculo = this.veiculoRepository.create({
       ...data,
-      usuario: { id: data.lojistaId },
+      usuario: { id: lojistaId },
       imagens: [],
     });
 
@@ -47,7 +41,12 @@ export class CriarVeiculoService {
             await this.imageService.criar({
               url: imagem.url,
               veiculoId: veiculoSalvo.id,
-              nome: veiculoSalvo.modelo,
+              nome:
+                veiculoSalvo.marca +
+                '-' +
+                veiculoSalvo.modelo +
+                '-' +
+                veiculoSalvo.id.split('-')[4],
             }),
         ),
       );
@@ -55,20 +54,9 @@ export class CriarVeiculoService {
 
     const veiculoCriado = await this.buscarVeiculoService.execute({
       veiculoId: veiculoSalvo.id,
-      usuarioId: data.lojistaId,
+      usuarioId: lojistaId,
     });
 
-    
-    return {
-      Resultado: {
-        ...(veiculoCriado.Resultado ? veiculoCriado.Resultado : veiculoSalvo),
-      },
-      Sucesso: true,
-      Mensagem: 'Veículo criado com sucesso',
-      Detalhe: null,
-      CodigoRetorno: 200,
-      TipoRetorno: 1,
-      TempoResposta: 0,
-    };
+    return veiculoCriado ? veiculoCriado : veiculoSalvo;
   }
 }

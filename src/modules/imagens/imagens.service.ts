@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Imagem } from './imagens.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { z } from 'zod';
 import { CriarImagemDto } from './dto/criar-imagem.dto';
 
@@ -18,7 +18,10 @@ export class ImagemService {
     private readonly imagemRepository: Repository<Imagem>,
   ) {}
 
-  async criar(data: z.infer<typeof CriarImagemDto>) {
+  async criar(
+    data: z.infer<typeof CriarImagemDto>,
+    manager: EntityManager = this.imagemRepository.manager,
+  ) {
     try {
       const validacao = CriarImagemDto.safeParse(data);
 
@@ -26,14 +29,14 @@ export class ImagemService {
         throw new BadRequestException(validacao.error);
       }
 
-      const newImagem = this.imagemRepository.create({
+      const novaImagem = await manager.create(Imagem, {
         ...data,
         veiculo: { id: data.veiculoId },
       });
 
-      await this.imagemRepository.save(newImagem);
+      await manager.save(novaImagem);
 
-      return newImagem;
+      return novaImagem;
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -66,7 +69,10 @@ export class ImagemService {
     return imagem;
   }
 
-  async deleteImagens(data: z.infer<typeof deleteImagesSchema>) {
+  async deleteImagens(
+    data: z.infer<typeof deleteImagesSchema>,
+    manager: EntityManager = this.imagemRepository.manager,
+  ) {
     const validation = deleteImagesSchema.safeParse(data);
     if (!validation.success) {
       throw new BadRequestException(validation.error);
@@ -79,9 +85,11 @@ export class ImagemService {
 
     for (const id of ids) {
       try {
-        const imagem = await this.imagemRepository.findOneBy({
-          id,
-          veiculo: { id: veiculoId },
+        const imagem = await manager.findOne(Imagem, {
+          where: {
+            id,
+            veiculo: { id: veiculoId },
+          },
         });
 
         if (!imagem) {
@@ -91,10 +99,10 @@ export class ImagemService {
           continue;
         }
 
-        await this.imagemRepository.remove(imagem);
+        await manager.remove(imagem);
         successCount++;
       } catch (err) {
-        errors.push(`Erro ao excluir imagem ${id}: ${err.mensagem}`);
+        errors.push(`Erro ao excluir imagem ${id}: ${err.message}`);
       }
     }
 

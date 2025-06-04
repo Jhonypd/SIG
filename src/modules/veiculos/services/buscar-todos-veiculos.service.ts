@@ -5,7 +5,11 @@ import { Veiculo } from '../veiculos.entity';
 import { RespostaPaginada } from 'src/common/interfaces/response.interface';
 import { FiltroVeiculoSchemaDto } from '../dto/filtros-veiculo.dto';
 import { z } from 'zod';
-import { UsuarioSchema, VeiculoSchemaDto } from '../dto/veiculo.dto';
+import {
+  UsuarioSchema,
+  VeiculoBuscasSchemaDto,
+  VeiculoSchemaDto,
+} from '../dto/veiculo.dto';
 import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
 
@@ -19,7 +23,7 @@ export class BuscarTodosVeiculosService {
 
   async execute(
     filtros: z.infer<typeof FiltroVeiculoSchemaDto>,
-    lojistaId: string,
+    lojistaId: z.infer<typeof VeiculoBuscasSchemaDto>['usuarioId'],
   ): Promise<RespostaPaginada<z.infer<typeof VeiculoSchemaDto>>> {
     const {
       marca,
@@ -100,20 +104,12 @@ export class BuscarTodosVeiculosService {
     );
 
     return {
-      Resultado: {
-        ListaGrid: listaTratada,
-        ItensPorPagina: limite,
-        TotalPaginas: Math.ceil(total / limite),
-        TotalRegistros: total,
-        TotalRegistrosFiltrados: total,
-        PaginaAtual: pagina,
-      },
-      Sucesso: true,
-      CodigoRetorno: 200,
-      TipoRetorno: 1,
-      TempoResposta: 0,
-      Mensagem: null,
-      Detalhe: null,
+      ListaGrid: listaTratada,
+      ItensPorPagina: limite,
+      TotalPaginas: Math.ceil(total / limite),
+      TotalRegistros: total,
+      TotalRegistrosFiltrados: total,
+      PaginaAtual: pagina,
     };
   }
 }
