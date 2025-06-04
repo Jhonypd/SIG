@@ -80,7 +80,7 @@ export class VehiclesController {
     type: RespostaPadraoDto,
   })
   create(@Body() createVehicleDto, @getUserToken() userToken: UsuarioData) {
-    return this.criarVeiculoService.create({
+    return this.criarVeiculoService.execute({
       ...createVehicleDto,
       lojistaId: userToken.id,
     });
@@ -93,7 +93,7 @@ export class VehiclesController {
   })
   alterar(@Param('id') id: string, @Body() updateVehicleDto, @Request() req) {
     const userId = req.userToken.id;
-    return this.vehiclesService.update(id, userId, updateVehicleDto);
+    return this.vehiclesService.execute(id, userId, updateVehicleDto);
   }
 
   @Delete('deletar/:id')

@@ -6,10 +6,13 @@ import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 import { z } from 'zod';
 import { BadRequestException } from '@nestjs/common';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
-import { VeiculoSchemaDto } from '../dto/veiculo.dto';
+import {
+  UsuarioDto,
+  UsuarioSchema,
+  VeiculoSchemaDto,
+} from '../dto/veiculo.dto';
 import { BuscarVeiculoService } from './buscar-veiculo.service';
 import { CriarVeiculoDto } from '../dto/criar-veiculo.dto';
-import { handleError } from 'src/common/helper/handler-error.helper';
 
 export class CriarVeiculoService {
   constructor(
@@ -20,7 +23,7 @@ export class CriarVeiculoService {
     private readonly encryptionService: EncryptionService,
   ) {}
 
-  async create(
+  async execute(
     data: z.infer<typeof CriarVeiculoDto>,
   ): Promise<RespostaPadrao<z.infer<typeof VeiculoSchemaDto>>> {
     const validation = CriarVeiculoDto.safeParse(data);
@@ -50,14 +53,15 @@ export class CriarVeiculoService {
       );
     }
 
-    const response = await this.buscarVeiculoService.execute({
+    const veiculoCriado = await this.buscarVeiculoService.execute({
       veiculoId: veiculoSalvo.id,
       usuarioId: data.lojistaId,
     });
 
+    
     return {
       Resultado: {
-        ...(response.Resultado ? response.Resultado : veiculoSalvo),
+        ...(veiculoCriado.Resultado ? veiculoCriado.Resultado : veiculoSalvo),
       },
       Sucesso: true,
       Mensagem: 'Veículo criado com sucesso',

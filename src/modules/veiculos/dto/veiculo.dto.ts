@@ -1,5 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ImageCreateRequestDto } from 'src/modules/imagens/dto/criar-imagem-request.dto';
 import { z } from 'zod';
 
 // O required "false" é para que seja possível validar
@@ -35,9 +33,13 @@ export const VeiculoSchemaDto = z.object({
     .optional(),
   usuario: z
     .object({
-      id: z.string().optional(),
-      nome: z.string().optional(),
+      id: z.string(),
+      nome: z.string(),
       email: z.string(),
     })
-    .optional(),
+    ,
 });
+
+
+export const UsuarioSchema = VeiculoSchemaDto.shape.usuario;
+ export    type UsuarioDto = z.infer<typeof UsuarioSchema>;

@@ -5,20 +5,22 @@ import { Veiculo } from '../veiculos.entity';
 import { RespostaPaginada } from 'src/common/interfaces/response.interface';
 import { FiltroVeiculoSchemaDto } from '../dto/filtros-veiculo.dto';
 import { z } from 'zod';
+import { UsuarioSchema, VeiculoSchemaDto } from '../dto/veiculo.dto';
+import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
+import { EncryptionService } from 'src/common/encryption/encryption.service';
 
 @Injectable()
 export class BuscarTodosVeiculosService {
   constructor(
     @InjectRepository(Veiculo)
     private readonly veiculoRepository: Repository<Veiculo>,
+    private readonly encryptionService: EncryptionService,
   ) {}
 
   async execute(
     filtros: z.infer<typeof FiltroVeiculoSchemaDto>,
     lojistaId: string,
-  ): Promise<RespostaPaginada<Veiculo>> {
-    try {
-    } catch (error) {}
+  ): Promise<RespostaPaginada<z.infer<typeof VeiculoSchemaDto>>> {
     const {
       marca,
       modelo,
@@ -83,9 +85,23 @@ export class BuscarTodosVeiculosService {
 
     const [lista, total] = await qb.getManyAndCount();
 
+    const listaTratada = await Promise.all(
+      lista.map(async (veiculo) => {
+        return {
+          ...veiculo,
+          usuario: await mapWithDecryptionDto(
+            veiculo.usuario,
+            UsuarioSchema,
+            this.encryptionService,
+            ['nome', 'email'],
+          ),
+        };
+      }),
+    );
+
     return {
       Resultado: {
-        ListaGrid: lista,
+        ListaGrid: listaTratada,
         ItensPorPagina: limite,
         TotalPaginas: Math.ceil(total / limite),
         TotalRegistros: total,

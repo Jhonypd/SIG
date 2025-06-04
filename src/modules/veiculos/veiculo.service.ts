@@ -13,7 +13,7 @@ export class VeiculoService {
     private readonly buscarVeiculoService: BuscarVeiculoService,
   ) {}
 
-  async update(
+  async execute(
     veiculoId: string,
     usuarioId: string,
     updateData: Partial<Veiculo>,
