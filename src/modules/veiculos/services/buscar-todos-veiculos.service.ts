@@ -76,7 +76,7 @@ export class BuscarTodosVeiculosService {
         palavras: `%${palavrasChave.toLowerCase()}%`,
       });
     }
-    console.log(pagina * limite);
+
     qb.orderBy('veiculo.preco', 'DESC')
       .skip(pagina * limite)
       .take(limite);
