@@ -6,6 +6,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { z } from 'zod';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -23,7 +24,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest<T = JwtPayload>(
+  handleRequest<T = z.infer<typeof JwtPayload>>(
     err: any,
     user: T,
     info: any,

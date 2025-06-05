@@ -1,4 +1,3 @@
-import { CriarImagemDto } from 'src/modules/imagens/dto/criar-imagem.dto';
 import { z } from 'zod';
 
 export const AtualizaVeiculoDto = z.object({

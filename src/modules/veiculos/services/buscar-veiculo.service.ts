@@ -3,14 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Veiculo } from '../veiculos.entity';
 import { Repository } from 'typeorm';
 import { z } from 'zod';
-import {
-  UsuarioDto,
-  UsuarioSchema,
-  VeiculoBuscasSchemaDto,
-  VeiculoSchemaDto,
-} from '../dto/veiculo.dto';
+import { VeiculoBuscasSchemaDto, VeiculoSchemaDto } from '../dto/veiculo.dto';
 import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
+import {
+  UsuarioSchemaDto,
+  UsuarioType,
+} from 'src/modules/usuarios/dto/usuario.dto';
 
 @Injectable()
 export class BuscarVeiculoService {
@@ -32,9 +31,9 @@ export class BuscarVeiculoService {
       throw new NotFoundException('Veículo não encontrado');
     }
 
-    const usuario = await mapWithDecryptionDto<UsuarioDto>(
+    const usuario = await mapWithDecryptionDto<UsuarioType>(
       veiculo.usuario,
-      UsuarioSchema,
+      UsuarioSchemaDto,
       this.encryptionService,
       ['email', 'nome'],
     );

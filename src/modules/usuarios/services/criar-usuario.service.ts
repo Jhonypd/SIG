@@ -8,6 +8,8 @@ import { EncryptionService } from 'src/common/encryption/encryption.service';
 import { Usuario } from '../usuarios.entity';
 import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { BuscarUsuarioService } from './buscar-usuario.service';
+import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
+import { UsuarioSchemaDto, UsuarioType } from '../dto/usuario.dto';
 
 @Injectable()
 export class CriarUsuarioService {
@@ -18,20 +20,24 @@ export class CriarUsuarioService {
     private readonly buscarUsuarioService: BuscarUsuarioService,
   ) {}
 
-  async criar(data: z.infer<typeof RegisterDto>): Promise<Usuario> {
+  async execute(
+    data: z.infer<typeof RegisterDto>,
+  ): Promise<z.infer<typeof UsuarioSchemaDto>> {
     const validation = RegisterDto.safeParse(data);
     if (!validation.success) {
       throw new BadRequestException(validation.error);
     }
 
-    const existingUser = await this.buscarUsuarioService.execute(data.email);
+    const existingUser = await this.buscarUsuarioService.execute({
+      email: data.email,
+    });
 
     if (existingUser) throw new BadRequestException('E-mail já cadastrado');
 
     const hashedPassword = await bcrypt.hash(data.senha, 10);
     const hashedEmail = this.hashEmail(data.email);
 
-    const usuario = this.usuarioRepository.create({
+    const usuarioDados = this.usuarioRepository.create({
       ...data,
       nome: this.encryptionService.encrypt(data.nome),
       email: this.encryptionService.encrypt(data.email),
@@ -39,7 +45,14 @@ export class CriarUsuarioService {
       senha: hashedPassword,
     });
 
-    await this.usuarioRepository.save(usuario);
+    const usuarioCriado = await this.usuarioRepository.save(usuarioDados);
+
+    const usuario = await mapWithDecryptionDto<UsuarioType>(
+      usuarioCriado,
+      UsuarioSchemaDto,
+      this.encryptionService,
+      ['email', 'nome'],
+    );
 
     return usuario;
   }

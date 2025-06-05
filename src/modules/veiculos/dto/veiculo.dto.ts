@@ -1,3 +1,4 @@
+import { UsuarioSchemaDto } from 'src/modules/usuarios/dto/usuario.dto';
 import { z } from 'zod';
 
 // O required "false" é para que seja possível validar
@@ -32,11 +33,7 @@ export const VeiculoSchemaDto = z.object({
     )
     .optional()
     .default([]),
-  usuario: z.object({
-    id: z.string(),
-    nome: z.string(),
-    email: z.string(),
-  }),
+  usuario: UsuarioSchemaDto,
 });
 
 export const VeiculoBuscasSchemaDto = z.object({
@@ -48,5 +45,5 @@ export const VeiculoBuscasSchemaDto = z.object({
     .uuid('Id com formato inválido'),
 });
 
-export const UsuarioSchema = VeiculoSchemaDto.shape.usuario;
-export type UsuarioDto = z.infer<typeof UsuarioSchema>;
+// export const UsuarioSchema = VeiculoSchemaDto.shape.usuario;
+// export type UsuarioDto = z.infer<typeof UsuarioSchema>;

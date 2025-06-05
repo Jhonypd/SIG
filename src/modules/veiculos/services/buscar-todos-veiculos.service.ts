@@ -5,13 +5,10 @@ import { Veiculo } from '../veiculos.entity';
 import { RespostaPaginada } from 'src/common/interfaces/response.interface';
 import { FiltroVeiculoSchemaDto } from '../dto/filtros-veiculo.dto';
 import { z } from 'zod';
-import {
-  UsuarioSchema,
-  VeiculoBuscasSchemaDto,
-  VeiculoSchemaDto,
-} from '../dto/veiculo.dto';
+import { VeiculoBuscasSchemaDto, VeiculoSchemaDto } from '../dto/veiculo.dto';
 import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { UsuarioSchemaDto } from 'src/modules/usuarios/dto/usuario.dto';
 
 @Injectable()
 export class BuscarTodosVeiculosService {
@@ -95,7 +92,7 @@ export class BuscarTodosVeiculosService {
           ...veiculo,
           usuario: await mapWithDecryptionDto(
             veiculo.usuario,
-            UsuarioSchema,
+            UsuarioSchemaDto,
             this.encryptionService,
             ['nome', 'email'],
           ),
