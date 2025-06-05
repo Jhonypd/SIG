@@ -1,30 +1,30 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RespostaPadrao } from 'src/common/interfaces/response.interface';
-import { RegisterDto } from '../auth/dto/register.dto';
 import { z } from 'zod';
 import * as bcrypt from 'bcrypt';
 import { createHmac } from 'crypto';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
-import { Usuario } from './usuarios.entity';
+import { Usuario } from '../usuarios.entity';
+import { RegisterDto } from 'src/modules/auth/dto/register.dto';
+import { BuscarUsuarioService } from './buscar-usuario.service';
 
 @Injectable()
-export class UsuarioService {
+export class CriarUsuarioService {
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
     private readonly encryptionService: EncryptionService,
+    private readonly buscarUsuarioService: BuscarUsuarioService,
   ) {}
 
-  
   async criar(data: z.infer<typeof RegisterDto>): Promise<Usuario> {
     const validation = RegisterDto.safeParse(data);
     if (!validation.success) {
       throw new BadRequestException(validation.error);
     }
 
-    const existingUser = await this.buscarUsuario(data.email);
+    const existingUser = await this.buscarUsuarioService.execute(data.email);
 
     if (existingUser) throw new BadRequestException('E-mail já cadastrado');
 
@@ -40,52 +40,6 @@ export class UsuarioService {
     });
 
     await this.usuarioRepository.save(usuario);
-
-    return usuario;
-  }
-  async buscarUsuario(email: string): Promise<Usuario> {
-    const hashedEmail = this.hashEmail(email);
-    const usuario = await this.usuarioRepository.findOneBy({
-      hashEmail: hashedEmail,
-    });
-
-    if (!usuario) {
-      throw new BadRequestException('Usuário não encontrado');
-    }
-    return usuario;
-  }
-  async delete(id: string): Promise<Usuario> {
-    const usuario = await this.buscarPorId(id);
-
-    if (!usuario) {
-      throw new BadRequestException('Usuário não encontrado');
-    }
-
-    await this.usuarioRepository.remove(usuario);
-
-    return usuario;
-  }
-
-  async buscarPorId(id: string): Promise<Usuario> {
-    const usuario = await this.usuarioRepository.findOneBy({
-      id: id,
-    });
-
-    if (!usuario) {
-      throw new BadRequestException('Usuário não encontrado');
-    }
-
-    return usuario;
-  }
-
-  async update(id: string, data: Partial<Usuario>): Promise<Usuario> {
-    const usuario = await this.buscarPorId(id);
-
-    if (!usuario) {
-      throw new BadRequestException('Usuário não encontrado');
-    }
-
-    await this.usuarioRepository.update(id, data);
 
     return usuario;
   }

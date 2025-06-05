@@ -42,32 +42,7 @@ export class ImagemService {
     }
   }
 
-  async buscarPorVeiculo(data: z.infer<typeof CriarImagemDto.shape.veiculoId>) {
-    const validation = CriarImagemDto.safeParse(data);
-    if (!validation.success) {
-      throw new BadRequestException(validation.error);
-    }
-
-    const images = await this.imagemRepository.findBy({
-      veiculo: { id: data },
-    });
-
-    return images;
-  }
-
-  async buscarPorId(data: z.infer<typeof idSchema>) {
-    const validation = idSchema.safeParse(data);
-    if (!validation.success) {
-      throw new BadRequestException(validation.error);
-    }
-
-    const imagem = await this.imagemRepository.findOneBy({ id: data.id });
-
-    if (!imagem) {
-      throw new BadRequestException('Imagem nao encontrada');
-    }
-    return imagem;
-  }
+  
 
   async deleteImagens(
     data: z.infer<typeof deleteImagesSchema>,

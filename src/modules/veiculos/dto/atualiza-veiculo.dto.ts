@@ -2,7 +2,6 @@ import { CriarImagemDto } from 'src/modules/imagens/dto/criar-imagem.dto';
 import { z } from 'zod';
 
 export const AtualizaVeiculoDto = z.object({
-  lojistaId: z.string().uuid({ message: 'Id em formato inválido' }),
   veiculoId: z.string().uuid({ message: 'Id em formato inválido' }),
   veiculo: z.object({
     marca: z
@@ -21,9 +20,17 @@ export const AtualizaVeiculoDto = z.object({
       .positive({ message: 'O preço deve ser maior que zero' }),
     descricao: z.string({ message: 'Apenas texto' }).optional(),
 
-    imagensIncluir: z.array(CriarImagemDto.shape.url),
-    imagensExcluir: z.array(
-      z.object({ id: z.string().uuid({ message: 'Id em formato inválido' }) }),
-    ),
+    imagensIncluir: z
+      .array(
+        z.object({
+          url: z.string().url({ message: 'URL inválida' }),
+        }),
+      )
+      .optional()
+      .default([]),
+    imagensExcluir: z
+      .array(z.string().uuid({ message: 'Id da imagem em formato inválido' }))
+      .optional()
+      .default([]),
   }),
 });

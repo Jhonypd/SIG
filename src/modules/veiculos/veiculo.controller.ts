@@ -100,28 +100,17 @@ export class VeiculosController {
     type: RespostaPadraoDto,
   })
   alterarVeiculo(
-    @Param('id') id: z.infer<typeof VeiculoSchemaDto.shape.usuario.shape.id>,
     @Body(new ZodValidationPipe(AtualizaVeiculoDto))
     body: z.infer<typeof AtualizaVeiculoDto>,
     @getUserToken() userToken: UsuarioData,
   ) {
-    return this.alterarVeiculoService.execute({
-      veiculoId: id,
-      lojistaId: userToken.id,
-
-      veiculo: {
-        ...body.veiculo,
-        descricao: body.veiculo.descricao ? body.veiculo.descricao : undefined,
-        imagensIncluir:
-          body.veiculo.imagensIncluir && body.veiculo.imagensIncluir?.length > 0
-            ? body.veiculo.imagensIncluir
-            : [],
-        imagensExcluir:
-          body.veiculo.imagensExcluir && body.veiculo.imagensExcluir?.length > 0
-            ? body.veiculo.imagensExcluir
-            : [],
+    return this.alterarVeiculoService.execute(
+      {
+        veiculoId: body.veiculoId,
+        veiculo: body.veiculo,
       },
-    });
+      userToken.id,
+    );
   }
 
   @Delete('deletar/:id')

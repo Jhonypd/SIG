@@ -32,18 +32,18 @@ export class AuthService {
 
     const existingUser = await this.usuarioService.buscarUsuario(data.email);
 
-    if (existingUser.Resultado) {
+    if (existingUser) {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
     const user = await this.usuarioService.criar(data);
 
-    if (!user.Resultado) {
+    if (!user) {
       throw new BadRequestException('Erro ao cadastrar usuário');
     }
 
     return {
-      Resultado: { Id: user.Resultado?.id },
+      Resultado: { Id: user.id },
       Sucesso: true,
       Mensagem: 'Usuário cadastrado com sucesso',
       Detalhe: null,
@@ -67,23 +67,20 @@ export class AuthService {
 
     const usuario = await this.usuarioService.buscarUsuario(data.email);
 
-    if (!usuario.Resultado) {
+    if (!usuario) {
       throw new UnauthorizedException('Usuário e/ou senha inválidos');
     }
 
-    const senhaValida = await bcrypt.compare(
-      data.senha,
-      usuario.Resultado.senha,
-    );
+    const senhaValida = await bcrypt.compare(data.senha, usuario.senha);
 
     if (!senhaValida) {
       throw new UnauthorizedException('Usuário e/ou senha inválidos');
     }
 
     const payload = {
-      id: usuario.Resultado.id,
-      email: this.encryptionService.decrypt(usuario.Resultado.email),
-      name: this.encryptionService.decrypt(usuario.Resultado.nome),
+      id: usuario.id,
+      email: this.encryptionService.decrypt(usuario.email),
+      name: this.encryptionService.decrypt(usuario.nome),
     };
     const token = await this.jwtService.signAsync(payload);
 

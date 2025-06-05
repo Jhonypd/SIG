@@ -4,9 +4,11 @@ import { z } from 'zod';
 export const CriarVeiculoSchemaDto = z.object({
   marca: z
     .string({ message: 'Apenas texto' })
+    .toUpperCase()
     .min(3, 'Marca deve ter pelo menos 3 caracteres'),
   modelo: z
     .string({ message: 'Apenas texto' })
+    .toUpperCase()
     .min(2, 'Modelo deve ter pelo menos 2 caracteres'),
   ano: z
     .number({ message: 'Apenas números são aceitos no ano' })

@@ -41,12 +41,7 @@ export class CriarVeiculoService {
             await this.imageService.criar({
               url: imagem.url,
               veiculoId: veiculoSalvo.id,
-              nome:
-                veiculoSalvo.marca +
-                '-' +
-                veiculoSalvo.modelo +
-                '-' +
-                veiculoSalvo.id.split('-')[4],
+              nome: `${veiculoSalvo.marca.replace(' ', '_')}-${veiculoSalvo.modelo.replace(' ', '_')}-${veiculoSalvo.id.split('-')[4]}`,
             }),
         ),
       );

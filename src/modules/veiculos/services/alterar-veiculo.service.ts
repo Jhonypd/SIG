@@ -6,7 +6,7 @@ import { BuscarVeiculoService } from './buscar-veiculo.service';
 import { z } from 'zod';
 import { AtualizaVeiculoDto } from '../dto/atualiza-veiculo.dto';
 import { ImagemService } from 'src/modules/imagens/imagens.service';
-import { VeiculoSchemaDto } from '../dto/veiculo.dto';
+import { VeiculoBuscasSchemaDto, VeiculoSchemaDto } from '../dto/veiculo.dto';
 
 @Injectable()
 export class AlterarVeiculoService {
@@ -18,10 +18,13 @@ export class AlterarVeiculoService {
 
   async execute(
     data: z.infer<typeof AtualizaVeiculoDto>,
+    lojistaId: z.infer<typeof VeiculoBuscasSchemaDto>['usuarioId'],
   ): Promise<z.infer<typeof VeiculoSchemaDto>> {
+    let novaImagem: z.infer<typeof VeiculoSchemaDto.shape.imagens> | [] = [];
+
     const veiculo = await this.buscarVeiculoService.execute({
       veiculoId: data.veiculoId,
-      usuarioId: data.lojistaId,
+      usuarioId: lojistaId,
     });
 
     if (!veiculo) {
@@ -33,47 +36,58 @@ export class AlterarVeiculoService {
     await queryRunner.startTransaction();
 
     try {
+      // Atualização dos dados principais
       const { marca, modelo, ano, preco, descricao } = data.veiculo;
       Object.assign(veiculo, { marca, modelo, ano, preco, descricao });
       await queryRunner.manager.save(Veiculo, veiculo);
 
-      await this.imagemService.deleteImagens(
-        {
-          veiculoId: veiculo.id,
-          ids: data.veiculo.imagensExcluir.map((img) => img.id),
-        },
-        queryRunner.manager,
-      );
-
-      const imagensIncluir = data.veiculo.imagensIncluir?.filter(Boolean) ?? [];
-      if (imagensIncluir.length > 0) {
-        const novasImagens = await Promise.all(
-          imagensIncluir.map((img) =>
-            this.imagemService.criar(
-              {
-                nome:
-                  veiculo.marca +
-                  '-' +
-                  veiculo.modelo +
-                  '-' +
-                  veiculo.id.split('-')[0],
-                url: img,
-                veiculoId: veiculo.id,
-              },
-              queryRunner.manager,
-            ),
-          ),
-        );
-        await queryRunner.manager.save(novasImagens);
-      }
-
       await queryRunner.commitTransaction();
-      return veiculo;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
       await queryRunner.release();
     }
+
+    /** atualização das imagens de forma mais isolada, para que possíveis
+     * erros nas imagens não atrapalhem em atualizar as informações do veiculo
+     */
+
+    try {
+      if (data.veiculo.imagensExcluir?.length) {
+        await this.imagemService.deleteImagens(
+          {
+            veiculoId: veiculo.id,
+            ids: data.veiculo.imagensExcluir.map((id) => id),
+          },
+          this.dataSource.manager,
+        );
+      }
+
+      const imagensIncluir = data.veiculo.imagensIncluir?.filter(Boolean) ?? [];
+
+      if (imagensIncluir.length > 0) {
+        const novasImagens = await Promise.all(
+          imagensIncluir.map((imagemUrl) =>
+            this.imagemService.criar(
+              {
+                nome: `${veiculo.marca.replace(' ', '_')}-${veiculo.modelo.replace(' ', '_')}-${veiculo.id.split('-')[4]}`,
+                url: imagemUrl.url,
+                veiculoId: veiculo.id,
+              },
+              this.dataSource.manager,
+            ),
+          ),
+        );
+        novaImagem = await this.dataSource.manager.save(novasImagens);
+      }
+    } catch (imagemError) {
+      console.error(
+        'Houve um ou mais erros durante o processamento das imagens:',
+        imagemError,
+      );
+    }
+
+    return { ...veiculo, imagens: novaImagem };
   }
 }

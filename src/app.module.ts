@@ -1,7 +1,5 @@
 import { AuthModule } from './modules/auth/auth.module';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { VeiculosModule } from './modules/veiculos/veiculo.module';
@@ -28,7 +26,7 @@ import { ImagemModule } from './modules/imagens/imagens.module';
     VeiculosModule,
     ImagemModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

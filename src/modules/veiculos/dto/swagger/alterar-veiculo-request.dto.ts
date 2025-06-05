@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CriarImagemRequestDto } from 'src/modules/imagens/dto/swagger/criar-imagem-request.dto';
-import { ImagemExcluirDto } from 'src/modules/imagens/dto/swagger/exclui-imagem-request.dto';
+
 
 class VeiculoAtualizaDto {
   @ApiProperty({ example: 'Toyota', minLength: 3 })
@@ -16,7 +16,7 @@ class VeiculoAtualizaDto {
   })
   ano: number;
 
-  @ApiProperty({ example: 85000, minimum: 1 })
+  @ApiProperty({ example: 85000, minimum: 1, maximum: 999999 })
   preco: number;
 
   @ApiPropertyOptional({ example: 'Veículo em excelente estado, único dono' })
@@ -25,12 +25,20 @@ class VeiculoAtualizaDto {
   @ApiProperty({ type: [CriarImagemRequestDto], required: false })
   imagensIncluir: CriarImagemRequestDto[];
 
-  @ApiProperty({ type: [ImagemExcluirDto], required: false })
-  imagensExcluir: ImagemExcluirDto[];
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description: 'IDs das imagens que devem ser removidas',
+    example: [
+      'c27bba88-02dd-491d-93b2-e068cd314486',
+      'b77cfa01-a51d-4df3-a4b4-fbcb2fd3c9d1',
+    ],
+  })
+  imagensExcluir?: string[];
 }
 
 export class AtualizaVeiculoRequestDto {
-  @ApiProperty({ example: 'uuid', description: 'ID do veículo' })
+  @ApiProperty({ example: 'c27bba88-02dd-491d-93b2-e068cd314486', description: 'ID do veículo' })
   veiculoId: string;
 
   @ApiProperty({ type: VeiculoAtualizaDto })

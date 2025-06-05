@@ -30,7 +30,8 @@ export const VeiculoSchemaDto = z.object({
         veiculoId: z.string().uuid().optional(),
       }),
     )
-    .optional(),
+    .optional()
+    .default([]),
   usuario: z.object({
     id: z.string(),
     nome: z.string(),
