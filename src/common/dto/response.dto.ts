@@ -8,7 +8,7 @@ export enum TipoRetorno {
   ERRO_INTERNO_SERVIDOR = 5,
 }
 
-export class RespostaPadraoDto {
+export class RespostaPadraoSwaggerDto {
   @ApiProperty({
     nullable: true,
     description: 'Resultado da operação',
