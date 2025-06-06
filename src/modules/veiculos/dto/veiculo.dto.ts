@@ -6,9 +6,11 @@ export const VeiculoSchema = z.object({
   id: z.string({ required_error: 'ID é obrigatório' }).uuid('ID inválido'),
   marca: z
     .string({ required_error: 'Marca é obrigatória' })
+    .toUpperCase()
     .min(1, 'Marca não pode ser vazia'),
   modelo: z
     .string({ required_error: 'Modelo é obrigatório' })
+    .toUpperCase()
     .min(1, 'Modelo não pode ser vazio'),
   ano: z
     .number({ required_error: 'Ano é obrigatório' })
@@ -46,10 +48,12 @@ export const AtualizaVeiculoDto = z.object({
   veiculo: z.object({
     marca: z
       .string({ required_error: 'Marca é obrigatória' })
+      .toUpperCase()
       .min(1, 'Marca não pode ser vazia')
       .optional(),
     modelo: z
       .string({ required_error: 'Modelo é obrigatório' })
+      .toUpperCase()
       .min(1, 'Modelo não pode ser vazio')
       .optional(),
     ano: z
@@ -62,7 +66,7 @@ export const AtualizaVeiculoDto = z.object({
       .number({ required_error: 'Preço é obrigatório' })
       .positive('O preço deve ser maior que zero')
       .optional(),
-    descricao: z.string().optional(),
+    descricao: z.string().toUpperCase().optional(),
   }),
 
   imagensIncluir: z

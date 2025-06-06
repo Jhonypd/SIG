@@ -17,11 +17,11 @@ import {
   RespostaPadrao,
   TipoRetorno,
 } from 'src/common/interfaces/response.interface';
-import {  UsuarioSchema,UsuarioControllerCriar } from './dto/usuario.dto';
+import { UsuarioSchema, UsuarioControllerCriar } from './dto/usuario.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@ApiTags('UsuarioSchema')
+@ApiTags('Usuario')
 @Controller('usuario')
 export class UsuarioController {
   constructor(private readonly alterarUsuarioService: AlterarUsuarioService) {}

@@ -80,10 +80,19 @@ export class BuscarTodosVeiculosService {
       qb.andWhere('veiculo.preco <= :maxPreco', { maxPreco });
     }
 
-    if (palavrasChave) {
-      qb.andWhere('LOWER(veiculo.descricao) LIKE :palavras', {
-        palavras: `%${palavrasChave.toLowerCase()}%`,
-      });
+    // if (palavrasChave) {
+    //   qb.andWhere('LOWER(veiculo.descricao) LIKE :palavras', {
+    //     palavras: `%${palavrasChave.toLowerCase()}%`,
+    //   });
+    // }
+
+    if (palavrasChave && palavrasChave.trim().length > 0) {
+      qb.andWhere(
+        `(veiculo.descricao IS NOT NULL AND LOWER(veiculo.descricao) LIKE :palavras
+      OR LOWER(veiculo.modelo) LIKE :palavras
+      OR LOWER(veiculo.marca) LIKE :palavras)`,
+        { palavras: `%${palavrasChave.toLowerCase()}%` },
+      );
     }
 
     qb.orderBy('veiculo.preco', 'DESC')
