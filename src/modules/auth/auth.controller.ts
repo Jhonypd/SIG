@@ -1,5 +1,10 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { z } from 'zod';
 import { RegistroSchemaDto } from './dto/register.dto';
@@ -19,6 +24,10 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('registro')
+  @ApiOperation({
+    summary: 'Cadastra um novo usuário lojista',
+    description: 'Registra um novo lojista com nome, e-mail e senha.',
+  })
   @ApiBody({
     type: RegistroRequestSwaggerDto,
     examples: {
@@ -53,6 +62,10 @@ export class AuthController {
   }
 
   @Post('gerarToken')
+  @ApiOperation({
+    summary: 'Realiza login e gera token JWT',
+    description: 'Autentica o usuário lojista e retorna o token de acesso.',
+  })
   @ApiBody({
     type: LoginRequestDto,
     examples: {

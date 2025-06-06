@@ -3,6 +3,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { z } from 'zod';
@@ -27,6 +28,11 @@ export class UsuarioController {
   constructor(private readonly alterarUsuarioService: AlterarUsuarioService) {}
 
   @Put('alterar')
+  @ApiOperation({
+    summary: 'Atualiza os dados do usuário logado',
+    description:
+      'Permite atualizar o e-mail, a senha ou ambos para o usuário autenticado.',
+  })
   @ApiBody({
     type: AlterarUsuarioRequestDto,
     examples: {

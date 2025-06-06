@@ -30,6 +30,8 @@ export class AlterarUsuarioService {
       email: data.lojistaEmail,
     });
 
+    console.log({ data: data.lojistaEmail });
+
     if (!usuarioEsxistente) {
       throw new BadRequestException('Usuário não encontrado');
     }
@@ -37,6 +39,7 @@ export class AlterarUsuarioService {
     if (usuarioEsxistente.id !== data.lojistaId) {
       throw new BadRequestException('Email já cadastrado para outro usuário');
     }
+    console.log({ duplicado: usuarioEsxistente.id !== data.lojistaId });
 
     const dadosAtualizacao: Partial<Usuario> = {};
 

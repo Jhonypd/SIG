@@ -15,7 +15,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
-  ApiParam,
+  ApiOperation,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -42,6 +42,7 @@ import {
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@ApiTags('Veiculos')
 @Controller('veiculos')
 export class VeiculosController {
   constructor(
@@ -52,21 +53,29 @@ export class VeiculosController {
     private readonly alterarVeiculoService: AlterarVeiculoService,
   ) {}
 
-  @Get('todos')
+  @Post('inserir')
+  @ApiBody({ type: VeiculoReqSwagger, required: false })
+  @ApiOperation({
+    summary: 'Cadastrar novo veículo',
+    description: 'Cadastra um novo veículo para o lojista autenticado.',
+  })
   @ApiCreatedResponse({
-    description: 'Operação realizada com sucesso.',
+    description: 'Veículo cadastrado com sucesso.',
     type: RespostaPadraoSwaggerDto,
   })
-  @ApiQuery({ type: FiltroVeiculoRequestDto, required: false })
-  buscarTodosVeiculos(
-    @Query(new ZodValidationPipe(VeiculosFiltroReq))
-    filtros: z.infer<typeof VeiculosFiltroReq>,
+  criarVeiculo(
+    @Body(new ZodValidationPipe(VeiculoCriarReq))
+    veiculo: z.infer<typeof VeiculoCriarReq>,
     @getUserToken() userToken: UsuarioData,
   ) {
-    return this.buscarTodosVeiculoService.execute(filtros, userToken.id);
+    return this.criarVeiculoService.execute(veiculo, userToken.id);
   }
 
   @Get(':id')
+  @ApiOperation({
+    summary: 'Buscar veículo por ID',
+    description: 'Retorna os detalhes de um veículo específico do lojista.',
+  })
   @ApiCreatedResponse({
     description: 'Veículo encontrado com sucesso.',
     type: RespostaPadraoSwaggerDto,
@@ -81,22 +90,12 @@ export class VeiculosController {
     });
   }
 
-  @Post('inserir')
-  @ApiBody({ type: VeiculoReqSwagger, required: false })
-  @ApiCreatedResponse({
-    description: 'Veículo cadastrado com sucesso.',
-    type: RespostaPadraoSwaggerDto,
-  })
-  criarVeiculo(
-    @Body(new ZodValidationPipe(VeiculoCriarReq))
-    veiculo: z.infer<typeof VeiculoCriarReq>,
-    @getUserToken() userToken: UsuarioData,
-  ) {
-    return this.criarVeiculoService.execute(veiculo, userToken.id);
-  }
-
   @Put('alterar')
   @ApiBody({ type: AtualizaVeiculoRequestDto, required: false })
+  @ApiOperation({
+    summary: 'Atualizar veículo',
+    description: 'Altera as informações e imagens de um veículo já existente.',
+  })
   @ApiCreatedResponse({
     description: 'Veículo atualizado com sucesso.',
     type: RespostaPadraoSwaggerDto,
@@ -118,14 +117,41 @@ export class VeiculosController {
   }
 
   @Delete('deletar/:id')
+  @ApiOperation({
+    summary: 'Deletar veículo',
+    description: 'Remove um veículo do lojista pelo ID.',
+  })
   @ApiCreatedResponse({
     description: 'Veículo removido com sucesso.',
     type: RespostaPadraoSwaggerDto,
+  })
+  @ApiOperation({
+    summary: 'Buscar veículo por ID',
+    description: 'Retorna os detalhes de um veículo específico do lojista.',
   })
   deletar(@Param('id') id: string, @getUserToken() userToken: UsuarioData) {
     return this.deleteVeiculoService.execute({
       veiculoId: id,
       usuarioId: userToken.id,
     });
+  }
+
+  @Get('todos')
+  @ApiCreatedResponse({
+    description: 'Operação realizada com sucesso.',
+    type: RespostaPadraoSwaggerDto,
+  })
+  @ApiQuery({ type: FiltroVeiculoRequestDto, required: false })
+  @ApiOperation({
+    summary: 'Listar veículos',
+    description:
+      'Busca todos os veículos cadastrados do lojista autenticado, com filtros opcionais.',
+  })
+  buscarTodosVeiculos(
+    @Query(new ZodValidationPipe(VeiculosFiltroReq))
+    filtros: z.infer<typeof VeiculosFiltroReq>,
+    @getUserToken() userToken: UsuarioData,
+  ) {
+    return this.buscarTodosVeiculoService.execute(filtros, userToken.id);
   }
 }

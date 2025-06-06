@@ -21,6 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly config: ConfigService,
     private readonly encryptionService: EncryptionService,
   ) {
+    // Define como o JWT será extraído e a chave usada para validar a assinatura
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -28,7 +29,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: z.infer<typeof JwtPayload>) {
+  /**
+   * Validação da estratégia JWT.
+   *
+   * Esse método é executado automaticamente pelo Passport após a verificação da assinatura
+   * do token JWT. Serve para verificar se o usuário ainda existe no sistema e retornar
+   * seus dados descriptografados, que ficarão acessíveis via `@Request()` ou `@getUserToken()`.
+   *
+   * @param payload - Objeto extraído do token JWT. Deve conter `id`, `email`, `name`.
+   * Estrutura definida por `JwtPayload`.
+   *
+   * @throws UnauthorizedException - Se o usuário não for encontrado no banco de dados.
+   *
+   * @returns JwtPayloadType - Objeto contendo `id`, `email` e `nome` do usuário, com campos descriptografados.
+   */
+  async validate(payload: z.infer<typeof JwtPayload>): Promise<JwtPayloadType> {
+    // Verifica se o usuário ainda existe no banco
     const usuarioExiste = await this.usuarioRepository.findOne({
       where: { id: payload.id },
     });
@@ -40,11 +56,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       });
     }
 
+    // Retorna os dados descriptografados conforme tipagem definida no payload
     const usuario = await mapWithDecryptionDto<JwtPayloadType>(
       usuarioExiste,
       JwtPayload,
       this.encryptionService,
-      ['email', 'nome'],
+      ['email', 'nome'], // campos que precisam ser descriptografados
     );
 
     return usuario;
