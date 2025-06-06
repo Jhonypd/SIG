@@ -42,7 +42,28 @@ export const VeiculoCriarReq = z.object({
 
 export const AtualizaVeiculoDto = z.object({
   veiculoId: z.string().uuid({ message: 'Id em formato inválido' }),
-  veiculo: VeiculoSchema.omit({ imagens: true, usuario: true, id: true }),
+  // veiculo: VeiculoSchema.omit({ imagens: true, usuario: true, id: true }),
+  veiculo: z.object({
+    marca: z
+      .string({ required_error: 'Marca é obrigatória' })
+      .min(1, 'Marca não pode ser vazia')
+      .optional(),
+    modelo: z
+      .string({ required_error: 'Modelo é obrigatório' })
+      .min(1, 'Modelo não pode ser vazio')
+      .optional(),
+    ano: z
+      .number({ required_error: 'Ano é obrigatório' })
+      .int('O ano deve ser um número inteiro')
+      .gte(1900, 'Ano inválido')
+      .lte(new Date().getFullYear() + 1, 'Ano inválido')
+      .optional(),
+    preco: z
+      .number({ required_error: 'Preço é obrigatório' })
+      .positive('O preço deve ser maior que zero')
+      .optional(),
+    descricao: z.string().optional(),
+  }),
 
   imagensIncluir: z
     .array(

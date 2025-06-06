@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Veiculo } from '../veiculos.entity';
 import { BuscarVeiculoService } from './buscar-veiculo.service';
 import { z } from 'zod';
 import { ImagemService } from 'src/modules/imagens/imagens.service';
-import { AtualizaVeiculoDto, VeiculoBuscaReq, VeiculoSchema } from '../dto/veiculo.dto';
+import {
+  AtualizaVeiculoDto,
+  VeiculoBuscaReq,
+  VeiculoSchema,
+} from '../dto/veiculo.dto';
 
 @Injectable()
 export class AlterarVeiculoService {
@@ -53,17 +56,17 @@ export class AlterarVeiculoService {
      */
 
     try {
-      if (data.veiculo.imagensExcluir?.length) {
+      if (data.imagensExcluir?.length) {
         await this.imagemService.deleteImagens(
           {
             veiculoId: veiculo.id,
-            ids: data.veiculo.imagensExcluir.map((id) => id),
+            ids: data.imagensExcluir.map((id) => id),
           },
           this.dataSource.manager,
         );
       }
 
-      const imagensIncluir = data.veiculo.imagensIncluir?.filter(Boolean) ?? [];
+      const imagensIncluir = data.imagensIncluir?.filter(Boolean) ?? [];
 
       if (imagensIncluir.length > 0) {
         const novasImagens = await Promise.all(

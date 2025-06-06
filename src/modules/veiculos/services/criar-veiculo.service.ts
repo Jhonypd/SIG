@@ -5,9 +5,9 @@ import { ImagemService } from 'src/modules/imagens/imagens.service';
 import { z } from 'zod';
 import { BadRequestException } from '@nestjs/common';
 import {
-  CriarVeiculoReq,
   VeiculoBuscaReq,
   VeiculoSchema,
+  VeiculoCriarReq,
 } from '../dto/veiculo.dto';
 import { BuscarVeiculoService } from './buscar-veiculo.service';
 
@@ -20,10 +20,10 @@ export class CriarVeiculoService {
   ) {}
 
   async execute(
-    data: z.infer<typeof CriarVeiculoReq>,
+    data: z.infer<typeof VeiculoCriarReq>,
     lojistaId: z.infer<typeof VeiculoBuscaReq>['usuarioId'],
   ): Promise<z.infer<typeof VeiculoSchema>> {
-    const validation = CriarVeiculoReq.safeParse(data);
+    const validation = VeiculoCriarReq.safeParse(data);
 
     if (!validation.success) {
       throw new BadRequestException(validation.error);

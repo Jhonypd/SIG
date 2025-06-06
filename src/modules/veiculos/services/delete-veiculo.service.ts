@@ -13,9 +13,7 @@ export class DeleteVeiculoService {
     private readonly veiculoRepository: Repository<Veiculo>,
   ) {}
 
-  async execute(
-    data: z.infer<typeof VeiculoBuscaReq>,
-  ): Promise<RespostaPadrao> {
+  async execute(data: z.infer<typeof VeiculoBuscaReq>): Promise<string> {
     // Buscar o veículo diretamente do repositório
     const veiculo = await this.veiculoRepository.findOne({
       where: { id: data.veiculoId, usuario: { id: data.usuarioId } },
@@ -31,14 +29,6 @@ export class DeleteVeiculoService {
 
     await this.veiculoRepository.remove(veiculo);
 
-    return {
-      Resultado: null,
-      Sucesso: true,
-      Mensagem: 'Veículo excluido com sucesso',
-      Detalhe: null,
-      CodigoRetorno: 200,
-      TipoRetorno: 1,
-      TempoResposta: 0,
-    };
+    return `${data.veiculoId}`;
   }
 }

@@ -34,7 +34,11 @@ import { DeleteVeiculoService } from './services/delete-veiculo.service';
 import { AlterarVeiculoService } from './services/alterar-veiculo.service';
 
 import { AtualizaVeiculoRequestDto } from './dto/swagger/alterar-veiculo-request.dto';
-import { AtualizaVeiculoDto, VeiculoCriarReq, VeiculosFiltroReq } from './dto/veiculo.dto';
+import {
+  AtualizaVeiculoDto,
+  VeiculoCriarReq,
+  VeiculosFiltroReq,
+} from './dto/veiculo.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -104,8 +108,10 @@ export class VeiculosController {
   ) {
     return this.alterarVeiculoService.execute(
       {
-        veiculoId: body.veiculoId,
         veiculo: body.veiculo,
+        imagensIncluir: body.imagensIncluir,
+        imagensExcluir: body.imagensExcluir,
+        veiculoId: body.veiculoId,
       },
       userToken.id,
     );
