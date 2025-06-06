@@ -4,9 +4,8 @@ import { DataSource, In, Repository } from 'typeorm';
 import { Veiculo } from '../veiculos.entity';
 import { BuscarVeiculoService } from './buscar-veiculo.service';
 import { z } from 'zod';
-import { AtualizaVeiculoDto } from '../dto/atualiza-veiculo.dto';
 import { ImagemService } from 'src/modules/imagens/imagens.service';
-import { VeiculoBuscasSchemaDto, VeiculoSchemaDto } from '../dto/veiculo.dto';
+import { AtualizaVeiculoDto, VeiculoBuscaReq, VeiculoSchema } from '../dto/veiculo.dto';
 
 @Injectable()
 export class AlterarVeiculoService {
@@ -18,9 +17,9 @@ export class AlterarVeiculoService {
 
   async execute(
     data: z.infer<typeof AtualizaVeiculoDto>,
-    lojistaId: z.infer<typeof VeiculoBuscasSchemaDto>['usuarioId'],
-  ): Promise<z.infer<typeof VeiculoSchemaDto>> {
-    let novaImagem: z.infer<typeof VeiculoSchemaDto.shape.imagens> | [] = [];
+    lojistaId: z.infer<typeof VeiculoBuscaReq>['usuarioId'],
+  ): Promise<z.infer<typeof VeiculoSchema>> {
+    let novaImagem: z.infer<typeof VeiculoSchema.shape.imagens> | [] = [];
 
     const veiculo = await this.buscarVeiculoService.execute({
       veiculoId: data.veiculoId,

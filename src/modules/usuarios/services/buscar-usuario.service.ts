@@ -3,10 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario } from '../usuarios.entity';
 import { createHmac } from 'crypto';
-import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { z } from 'zod';
-import { UsuarioSchemaDto, UsuarioSchemaResponseDto } from '../dto/usuario.dto';
-import { BuscarUsuarioSchemaDto } from '../dto/buscar-usuario.dto';
+import { UsuarioBuscaRes, UsuarioBuscaReq } from '../dto/usuario.dto';
 
 @Injectable()
 export class BuscarUsuarioService {
@@ -16,8 +14,8 @@ export class BuscarUsuarioService {
   ) {}
 
   async execute(
-    data: z.infer<typeof BuscarUsuarioSchemaDto>,
-  ): Promise<z.infer<typeof UsuarioSchemaResponseDto> | null> {
+    data: z.infer<typeof UsuarioBuscaReq>,
+  ): Promise<z.infer<typeof UsuarioBuscaRes> | null> {
     const hashedEmail = this.hashEmail(data.email);
 
     const usuario = await this.usuarioRepository.findOneBy({

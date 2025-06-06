@@ -20,23 +20,21 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RespostaPadraoDto } from 'src/common/dto/response.dto';
+import { RespostaPadraoSwaggerDto } from 'src/common/dto/response.dto';
 import { UsuarioData } from 'src/common/interfaces/usuario-data';
 import { CriarVeiculoService } from './services/criar-veiculo.service';
 import { BuscarVeiculoService } from './services/buscar-veiculo.service';
-import { CriarVeiculoRequestDto } from './dto/swagger/criar-veiculo-request.dto';
+import { VeiculoReqSwagger } from './dto/swagger/criar-veiculo-request.dto';
 import { BuscarTodosVeiculosService } from './services/buscar-todos-veiculos.service';
-import { FiltroVeiculoSchemaDto } from './dto/filtros-veiculo.dto';
 import { z } from 'zod';
 import { FiltroVeiculoRequestDto } from './dto/swagger/filtro-veiculo-request.dto';
 import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
 import { DeleteVeiculoService } from './services/delete-veiculo.service';
 import { AlterarVeiculoService } from './services/alterar-veiculo.service';
-import { CriarVeiculoSchemaDto } from './dto/criar-veiculo.dto';
-import { VeiculoSchemaDto } from './dto/veiculo.dto';
-import { AtualizaVeiculoDto } from './dto/atualiza-veiculo.dto';
+
 import { AtualizaVeiculoRequestDto } from './dto/swagger/alterar-veiculo-request.dto';
+import { AtualizaVeiculoDto, VeiculoCriarReq, VeiculosFiltroReq } from './dto/veiculo.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -53,12 +51,12 @@ export class VeiculosController {
   @Get('todos')
   @ApiCreatedResponse({
     description: 'Operação realizada com sucesso.',
-    type: RespostaPadraoDto,
+    type: RespostaPadraoSwaggerDto,
   })
   @ApiQuery({ type: FiltroVeiculoRequestDto, required: false })
   buscarTodosVeiculos(
-    @Query(new ZodValidationPipe(FiltroVeiculoSchemaDto))
-    filtros: z.infer<typeof FiltroVeiculoSchemaDto>,
+    @Query(new ZodValidationPipe(VeiculosFiltroReq))
+    filtros: z.infer<typeof VeiculosFiltroReq>,
     @getUserToken() userToken: UsuarioData,
   ) {
     return this.buscarTodosVeiculoService.execute(filtros, userToken.id);
@@ -67,7 +65,7 @@ export class VeiculosController {
   @Get(':id')
   @ApiCreatedResponse({
     description: 'Veículo encontrado com sucesso.',
-    type: RespostaPadraoDto,
+    type: RespostaPadraoSwaggerDto,
   })
   buscarVeiculo(
     @Param('id') id: string,
@@ -80,14 +78,14 @@ export class VeiculosController {
   }
 
   @Post('inserir')
-  @ApiBody({ type: CriarVeiculoRequestDto, required: false })
+  @ApiBody({ type: VeiculoReqSwagger, required: false })
   @ApiCreatedResponse({
     description: 'Veículo cadastrado com sucesso.',
-    type: RespostaPadraoDto,
+    type: RespostaPadraoSwaggerDto,
   })
   criarVeiculo(
-    @Body(new ZodValidationPipe(CriarVeiculoSchemaDto))
-    veiculo: z.infer<typeof CriarVeiculoSchemaDto>,
+    @Body(new ZodValidationPipe(VeiculoCriarReq))
+    veiculo: z.infer<typeof VeiculoCriarReq>,
     @getUserToken() userToken: UsuarioData,
   ) {
     return this.criarVeiculoService.execute(veiculo, userToken.id);
@@ -97,7 +95,7 @@ export class VeiculosController {
   @ApiBody({ type: AtualizaVeiculoRequestDto, required: false })
   @ApiCreatedResponse({
     description: 'Veículo atualizado com sucesso.',
-    type: RespostaPadraoDto,
+    type: RespostaPadraoSwaggerDto,
   })
   alterarVeiculo(
     @Body(new ZodValidationPipe(AtualizaVeiculoDto))
@@ -116,7 +114,7 @@ export class VeiculosController {
   @Delete('deletar/:id')
   @ApiCreatedResponse({
     description: 'Veículo removido com sucesso.',
-    type: RespostaPadraoDto,
+    type: RespostaPadraoSwaggerDto,
   })
   deletar(@Param('id') id: string, @getUserToken() userToken: UsuarioData) {
     return this.deleteVeiculoService.execute({

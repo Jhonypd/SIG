@@ -2,12 +2,16 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { z } from 'zod';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { RegisterRequestDto } from './dto/swagger/register-request.dto';
-import { RespostaPadraoDto } from 'src/common/dto/response.dto';
+import { RegistroSchemaDto } from './dto/register.dto';
+import { LoginSchemaDto } from './dto/login.dto';
+import { RegistroRequestSwaggerDto } from './dto/swagger/register-request.dto';
+import {
+  RespostaPadraoSwaggerDto,
+  TipoRetorno,
+} from 'src/common/dto/response.dto';
 import { LoginRequestDto } from './dto/swagger/login-request.dto';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
+import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 
 @ApiTags('Autorizacao')
 @Controller('autorizacao')
@@ -15,26 +19,70 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('registro')
-  @ApiBody({ type: RegisterRequestDto, required: false })
-  @ApiCreatedResponse({
-    description: 'Cadastro realizado com sucesso.',
-    type: RespostaPadraoDto,
+  @ApiBody({
+    type: RegistroRequestSwaggerDto,
+    examples: {
+      default: {
+        summary: 'Exemplo de cadastro',
+        value: {
+          nome: 'Jhony Da Silva',
+          email: 'jhony@email.com',
+          senha: 'Senha2025',
+        },
+      },
+    },
   })
-  async registro(
-    @Body(new ZodValidationPipe(RegisterDto)) body: z.infer<typeof RegisterDto>,
-  ) {
-    return this.authService.registrar(body);
+  @ApiCreatedResponse({
+    description: 'Usuário cadastrado com sucesso.',
+    type: RespostaPadraoSwaggerDto,
+  })
+  async registrarLojista(
+    @Body(new ZodValidationPipe(RegistroSchemaDto))
+    body: z.infer<typeof RegistroSchemaDto>,
+  ): Promise<RespostaPadrao<{ Id: string }>> {
+    const usuario = await this.authService.registrarLojista(body);
+    return {
+      Resultado: usuario,
+      Sucesso: true,
+      Detalhe: null,
+      Mensagem: 'Usuário cadastrado com sucesso.',
+      CodigoRetorno: 201,
+      TipoRetorno: TipoRetorno.RESPOSTA_SUCESSO,
+      TempoResposta: 0,
+    };
   }
 
   @Post('gerarToken')
-  @ApiBody({ type: LoginRequestDto, required: false })
+  @ApiBody({
+    type: LoginRequestDto,
+    examples: {
+      default: {
+        summary: 'Exemplo de login',
+        value: {
+          email: 'jhony@email.com',
+          senha: 'Senha2025',
+        },
+      },
+    },
+  })
   @ApiCreatedResponse({
     description: 'Login realizado com sucesso.',
-    type: RespostaPadraoDto,
+    type: RespostaPadraoSwaggerDto,
   })
-  async gerarToken(
-    @Body(new ZodValidationPipe(LoginDto)) body: z.infer<typeof LoginDto>,
-  ) {
-    return this.authService.gerarTokenLogin(body);
+  async gerarTokenLogin(
+    @Body(new ZodValidationPipe(LoginSchemaDto))
+    body: z.infer<typeof LoginSchemaDto>,
+  ): Promise<RespostaPadrao<{ Token: string; Validade: Date | null }>> {
+    const token = await this.authService.gerarTokenLogin(body);
+
+    return {
+      Resultado: token,
+      Sucesso: true,
+      Detalhe: null,
+      Mensagem: 'Login realizado com sucesso.',
+      CodigoRetorno: 201,
+      TipoRetorno: TipoRetorno.RESPOSTA_SUCESSO,
+      TempoResposta: 0,
+    };
   }
 }

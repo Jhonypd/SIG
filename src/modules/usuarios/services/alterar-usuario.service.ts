@@ -7,9 +7,12 @@ import { createHmac } from 'crypto';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
 import { BuscarUsuarioService } from './buscar-usuario.service';
 import { Usuario } from '../usuarios.entity';
-import { UsuarioSchemaDto, UsuarioType } from '../dto/usuario.dto';
+import {
+  UsuarioAlterarReq,
+  UsuarioSchema,
+  UsuarioType,
+} from '../dto/usuario.dto';
 import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
-import { AlterarUsuarioServiceSchemaDto } from '../dto/alterar-usuario.dto';
 
 @Injectable()
 export class AlterarUsuarioService {
@@ -21,8 +24,8 @@ export class AlterarUsuarioService {
   ) {}
 
   async execute(
-    data: z.infer<typeof AlterarUsuarioServiceSchemaDto>,
-  ): Promise<z.infer<typeof UsuarioSchemaDto>> {
+    data: z.infer<typeof UsuarioAlterarReq>,
+  ): Promise<z.infer<typeof UsuarioSchema>> {
     const usuarioEsxistente = await this.buscarUsuarioService.execute({
       email: data.lojistaEmail,
     });
@@ -71,7 +74,7 @@ export class AlterarUsuarioService {
 
     return await mapWithDecryptionDto<UsuarioType>(
       usuarioAtualizado,
-      UsuarioSchemaDto,
+      UsuarioSchema,
       this.encryptionService,
       ['email', 'nome'],
     );

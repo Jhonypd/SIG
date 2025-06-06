@@ -9,7 +9,6 @@ import { z } from 'zod';
 import { RespostaPadraoSwaggerDto } from 'src/common/dto/response.dto';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
 import { AlterarUsuarioService } from './services/alterar-usuario.service';
-import { AlterarUsuarioControllerSchemaDto } from './dto/alterar-usuario.dto';
 import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
 import { UsuarioData } from 'src/common/interfaces/usuario-data';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -18,11 +17,11 @@ import {
   RespostaPadrao,
   TipoRetorno,
 } from 'src/common/interfaces/response.interface';
-import { UsuarioSchemaDto } from './dto/usuario.dto';
+import {  UsuarioSchema,UsuarioControllerCriar } from './dto/usuario.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@ApiTags('Usuario')
+@ApiTags('UsuarioSchema')
 @Controller('usuario')
 export class UsuarioController {
   constructor(private readonly alterarUsuarioService: AlterarUsuarioService) {}
@@ -47,10 +46,10 @@ export class UsuarioController {
     type: RespostaPadraoSwaggerDto,
   })
   async alterarUsuario(
-    @Body(new ZodValidationPipe(AlterarUsuarioControllerSchemaDto))
-    body: z.infer<typeof AlterarUsuarioControllerSchemaDto>,
+    @Body(new ZodValidationPipe(UsuarioControllerCriar))
+    body: z.infer<typeof UsuarioControllerCriar>,
     @getUserToken() userToken: UsuarioData,
-  ): Promise<RespostaPadrao<{ usuario: z.infer<typeof UsuarioSchemaDto> }>> {
+  ): Promise<RespostaPadrao<{ usuario: z.infer<typeof UsuarioSchema> }>> {
     const usuario = await this.alterarUsuarioService.execute({
       ...body,
       lojistaId: userToken.id,

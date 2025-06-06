@@ -4,9 +4,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ImagemService } from 'src/modules/imagens/imagens.service';
 import { z } from 'zod';
 import { BadRequestException } from '@nestjs/common';
-import { VeiculoBuscasSchemaDto, VeiculoSchemaDto } from '../dto/veiculo.dto';
+import {
+  CriarVeiculoReq,
+  VeiculoBuscaReq,
+  VeiculoSchema,
+} from '../dto/veiculo.dto';
 import { BuscarVeiculoService } from './buscar-veiculo.service';
-import { CriarVeiculoSchemaDto } from '../dto/criar-veiculo.dto';
 
 export class CriarVeiculoService {
   constructor(
@@ -17,17 +20,17 @@ export class CriarVeiculoService {
   ) {}
 
   async execute(
-    data: z.infer<typeof CriarVeiculoSchemaDto>,
-    lojistaId: z.infer<typeof VeiculoBuscasSchemaDto>['usuarioId'],
-  ): Promise<z.infer<typeof VeiculoSchemaDto>> {
-    const validation = CriarVeiculoSchemaDto.safeParse(data);
+    data: z.infer<typeof CriarVeiculoReq>,
+    lojistaId: z.infer<typeof VeiculoBuscaReq>['usuarioId'],
+  ): Promise<z.infer<typeof VeiculoSchema>> {
+    const validation = CriarVeiculoReq.safeParse(data);
 
     if (!validation.success) {
       throw new BadRequestException(validation.error);
     }
 
     const Veiculo = this.veiculoRepository.create({
-      ...data,
+      ...data.veiculo,
       usuario: { id: lojistaId },
       imagens: [],
     });

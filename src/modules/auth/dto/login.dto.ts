@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const LoginDto = z.object({
+export const LoginSchemaDto = z.object({
   email: z
     .string({ required_error: 'Email é obrigatório' })
     .min(5, 'O email deve ter no mínimo 5 caracteres')

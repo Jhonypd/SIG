@@ -4,9 +4,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RegisterDto } from './dto/register.dto';
+import { RegistroSchemaDto } from './dto/register.dto';
 import { z } from 'zod';
-import { LoginDto } from './dto/login.dto';
+import { LoginSchemaDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
 import { BuscarUsuarioService } from '../usuarios/services/buscar-usuario.service';
@@ -21,13 +21,10 @@ export class AuthService {
     private readonly encryptionService: EncryptionService,
   ) {}
 
-  async registrar(data: z.infer<typeof RegisterDto>): Promise<{ Id: string }> {
-    const validation = RegisterDto.safeParse(data);
-    if (!validation.success) {
-      throw new BadRequestException(
-        validation.error.errors.map((e) => e.message).join(', '),
-      );
-    }
+  async registrarLojista(
+    data: z.infer<typeof RegistroSchemaDto>,
+  ): Promise<{ Id: string }> {
+    
 
     const existingUser = await this.buscarUsuarioService.execute({
       email: data.email,
@@ -47,14 +44,9 @@ export class AuthService {
   }
 
   async gerarTokenLogin(
-    data: z.infer<typeof LoginDto>,
+    data: z.infer<typeof LoginSchemaDto>,
   ): Promise<{ Token: string; Validade: Date | null }> {
-    const validation = LoginDto.safeParse(data);
-    if (!validation.success) {
-      throw new BadRequestException(
-        validation.error.errors.map((e) => e.message).join(', '),
-      );
-    }
+    
 
     let validade: Date | null = null;
 

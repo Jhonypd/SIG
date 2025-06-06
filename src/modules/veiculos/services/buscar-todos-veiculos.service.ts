@@ -3,12 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Veiculo } from '../veiculos.entity';
 import { RespostaPaginada } from 'src/common/interfaces/response.interface';
-import { FiltroVeiculoSchemaDto } from '../dto/filtros-veiculo.dto';
 import { z } from 'zod';
-import { VeiculoBuscasSchemaDto, VeiculoSchemaDto } from '../dto/veiculo.dto';
+import {
+  VeiculosFiltroReq,
+  VeiculoBuscaReq,
+  VeiculoSchema,
+} from '../dto/veiculo.dto';
 import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
-import { UsuarioSchemaDto } from 'src/modules/usuarios/dto/usuario.dto';
+import {
+  UsuarioSchema,
+  UsuarioType,
+} from 'src/modules/usuarios/dto/usuario.dto';
 
 @Injectable()
 export class BuscarTodosVeiculosService {
@@ -19,9 +25,9 @@ export class BuscarTodosVeiculosService {
   ) {}
 
   async execute(
-    filtros: z.infer<typeof FiltroVeiculoSchemaDto>,
-    lojistaId: z.infer<typeof VeiculoBuscasSchemaDto>['usuarioId'],
-  ): Promise<RespostaPaginada<z.infer<typeof VeiculoSchemaDto>>> {
+    filtros: z.infer<typeof VeiculosFiltroReq>,
+    lojistaId: z.infer<typeof VeiculoBuscaReq>['usuarioId'],
+  ): Promise<RespostaPaginada<z.infer<typeof VeiculoSchema>>> {
     const {
       marca,
       modelo,
@@ -90,9 +96,9 @@ export class BuscarTodosVeiculosService {
       lista.map(async (veiculo) => {
         return {
           ...veiculo,
-          usuario: await mapWithDecryptionDto(
+          usuario: await mapWithDecryptionDto<UsuarioType>(
             veiculo.usuario,
-            UsuarioSchemaDto,
+            UsuarioSchema,
             this.encryptionService,
             ['nome', 'email'],
           ),

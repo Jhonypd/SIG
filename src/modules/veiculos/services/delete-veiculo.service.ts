@@ -4,7 +4,7 @@ import { Veiculo } from '../veiculos.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 import { z } from 'zod';
-import { VeiculoBuscasSchemaDto } from '../dto/veiculo.dto';
+import { VeiculoBuscaReq } from '../dto/veiculo.dto';
 
 @Injectable()
 export class DeleteVeiculoService {
@@ -14,7 +14,7 @@ export class DeleteVeiculoService {
   ) {}
 
   async execute(
-    data: z.infer<typeof VeiculoBuscasSchemaDto>,
+    data: z.infer<typeof VeiculoBuscaReq>,
   ): Promise<RespostaPadrao> {
     // Buscar o veículo diretamente do repositório
     const veiculo = await this.veiculoRepository.findOne({

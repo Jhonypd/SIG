@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const CriarImagemDto = z.object({
+export const ImagemSchema = z.object({
   nome: z
     .string({
       message: 'Nome da imagem inválido, digite um valor válido',

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Imagem } from './imagens.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { z } from 'zod';
-import { CriarImagemDto } from './dto/criar-imagem.dto';
+import { ImagemSchema } from './dto/criar-imagem.dto';
 
 const idSchema = z.object({ id: z.string().uuid() });
 const deleteImagesSchema = z.object({
@@ -19,11 +19,11 @@ export class ImagemService {
   ) {}
 
   async criar(
-    data: z.infer<typeof CriarImagemDto>,
+    data: z.infer<typeof ImagemSchema>,
     manager: EntityManager = this.imagemRepository.manager,
   ) {
     try {
-      const validacao = CriarImagemDto.safeParse(data);
+      const validacao = ImagemSchema.safeParse(data);
 
       if (!validacao.success) {
         throw new BadRequestException(validacao.error);
@@ -41,8 +41,6 @@ export class ImagemService {
       throw new BadRequestException(error);
     }
   }
-
-  
 
   async deleteImagens(
     data: z.infer<typeof deleteImagesSchema>,

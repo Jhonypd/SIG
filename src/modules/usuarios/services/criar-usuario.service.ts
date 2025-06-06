@@ -6,10 +6,13 @@ import * as bcrypt from 'bcrypt';
 import { createHmac } from 'crypto';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
 import { Usuario } from '../usuarios.entity';
-import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { BuscarUsuarioService } from './buscar-usuario.service';
 import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
-import { UsuarioSchemaDto, UsuarioType } from '../dto/usuario.dto';
+import {
+  UsuarioSchema,
+  UsuarioCriarReq,
+  UsuarioType,
+} from '../dto/usuario.dto';
 
 @Injectable()
 export class CriarUsuarioService {
@@ -21,13 +24,8 @@ export class CriarUsuarioService {
   ) {}
 
   async execute(
-    data: z.infer<typeof RegisterDto>,
-  ): Promise<z.infer<typeof UsuarioSchemaDto>> {
-    const validation = RegisterDto.safeParse(data);
-    if (!validation.success) {
-      throw new BadRequestException(validation.error);
-    }
-
+    data: z.infer<typeof UsuarioCriarReq>,
+  ): Promise<z.infer<typeof UsuarioSchema>> {
     const existingUser = await this.buscarUsuarioService.execute({
       email: data.email,
     });
@@ -49,7 +47,7 @@ export class CriarUsuarioService {
 
     const usuario = await mapWithDecryptionDto<UsuarioType>(
       usuarioCriado,
-      UsuarioSchemaDto,
+      UsuarioSchema,
       this.encryptionService,
       ['email', 'nome'],
     );

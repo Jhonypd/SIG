@@ -3,7 +3,7 @@ import { ImageCreateRequestDto } from 'src/modules/imagens/dto/criar-imagem-requ
 
 // O required "false" é para que seja possível validar
 // o DTO com o ZodValidationPipe
-export class CriarVeiculoRequestDto {
+export class VeiculoSwagger {
   @ApiProperty({
     example: 'Toyota',
     description: 'Marca do veículo',
@@ -38,6 +38,15 @@ export class CriarVeiculoRequestDto {
     required: false,
   })
   descricao?: string;
+}
+
+export class VeiculoReqSwagger {
+  @ApiProperty({
+    description: 'Marca do veículo',
+    required: false,
+    type: VeiculoSwagger,
+  })
+  veiculo: VeiculoSwagger;
 
   @ApiProperty({
     description: 'URL da imagem do veículo',

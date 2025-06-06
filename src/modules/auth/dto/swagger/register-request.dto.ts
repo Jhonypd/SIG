@@ -1,8 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-// O required "false" é para que seja possível validar
-// o DTO com o ZodValidationPipe
-export class RegisterRequestDto {
+export class RegistroRequestSwaggerDto {
   @ApiProperty({ example: 'Jhony Teste', required: false })
   nome: string;
 

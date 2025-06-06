@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Veiculo } from '../veiculos.entity';
 import { Repository } from 'typeorm';
 import { z } from 'zod';
-import { VeiculoBuscasSchemaDto, VeiculoSchemaDto } from '../dto/veiculo.dto';
+import { VeiculoBuscaReq, VeiculoSchema } from '../dto/veiculo.dto';
 import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
 import { EncryptionService } from 'src/common/encryption/encryption.service';
 import {
-  UsuarioSchemaDto,
+  UsuarioSchema,
   UsuarioType,
 } from 'src/modules/usuarios/dto/usuario.dto';
 
@@ -20,8 +20,8 @@ export class BuscarVeiculoService {
   ) {}
 
   async execute(
-    data: z.infer<typeof VeiculoBuscasSchemaDto>,
-  ): Promise<z.infer<typeof VeiculoSchemaDto>> {
+    data: z.infer<typeof VeiculoBuscaReq>,
+  ): Promise<z.infer<typeof VeiculoSchema>> {
     const veiculo = await this.veiculoRepository.findOne({
       where: { id: data.veiculoId, usuario: { id: data.usuarioId } },
       relations: ['imagens', 'usuario'],
@@ -33,7 +33,7 @@ export class BuscarVeiculoService {
 
     const usuario = await mapWithDecryptionDto<UsuarioType>(
       veiculo.usuario,
-      UsuarioSchemaDto,
+      UsuarioSchema,
       this.encryptionService,
       ['email', 'nome'],
     );

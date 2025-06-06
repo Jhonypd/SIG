@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const RegisterDto = z.object({
+export const RegistroSchemaDto = z.object({
   nome: z
     .string({ required_error: 'Nome é obrigatório' })
     .min(3, 'O nome deve ter no mínimo 3 caracteres')
