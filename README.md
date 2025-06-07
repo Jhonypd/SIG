@@ -102,14 +102,9 @@ PORT=4000
 
 Para gerar a chave de criptografia necessária para a variável `ENCRYPTION_KEY`, execute o comando no terminal:
 
-**Linux/Mac:**
+**Windows (bash):**
 ```bash
 xxd -p -l 32 /dev/urandom | tr 'a-f' 'A-F'
-```
-
-**Windows (PowerShell):**
-```powershell
-[System.Web.Security.Membership]::GeneratePassword(64, 0)
 ```
 
 Copie a saída e cole na variável `ENCRYPTION_KEY`.
