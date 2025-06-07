@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const UsuarioSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid().nonempty(),
   nome: z.string().nonempty(),
   email: z.string().nonempty().email('Email inválido'),
 });
@@ -40,7 +40,6 @@ export const UsuarioCriarReq = z.object({
     .nonempty('Senha não informada.'),
 });
 
-
 export const UsuarioControllerCriar = z.object({
   dadosAlteracao: z.object({
     email: z.string().nonempty().email('Email inválido').optional(),
@@ -56,11 +55,10 @@ export const UsuarioControllerCriar = z.object({
   }),
 });
 
-export const UsuarioAlterarReq =
-  UsuarioControllerCriar.extend({
-    lojistaId: z.string().uuid().nonempty(),
-    lojistaEmail: z.string().nonempty().email('Email inválido'),
-  });
+export const UsuarioAlterarReq = UsuarioControllerCriar.extend({
+  lojistaId: z.string().uuid().nonempty(),
+  lojistaEmail: z.string().nonempty().email('Email inválido'),
+});
 
 export type UsuarioBuscaType = z.infer<typeof UsuarioBuscaRes>;
 export type UsuarioType = z.infer<typeof UsuarioSchema>;
