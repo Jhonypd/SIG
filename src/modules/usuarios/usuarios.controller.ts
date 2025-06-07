@@ -8,7 +8,7 @@ import {
 } from '@nestjs/swagger';
 import { z } from 'zod';
 import { RespostaPadraoSwaggerDto } from 'src/common/dto/response.dto';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
+import { ZodValidacaoPipe } from 'src/common/pipes/zod-validacoes.pipe';
 import { AlterarUsuarioService } from './services/alterar-usuario.service';
 import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
 import { UsuarioData } from 'src/common/interfaces/usuario-data';
@@ -52,7 +52,7 @@ export class UsuarioController {
     type: RespostaPadraoSwaggerDto,
   })
   async alterarUsuario(
-    @Body(new ZodValidationPipe(UsuarioControllerCriar))
+    @Body(new ZodValidacaoPipe(UsuarioControllerCriar))
     body: z.infer<typeof UsuarioControllerCriar>,
     @getUserToken() userToken: UsuarioData,
   ): Promise<RespostaPadrao<{ usuario: z.infer<typeof UsuarioSchema> }>> {

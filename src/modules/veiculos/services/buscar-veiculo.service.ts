@@ -4,8 +4,8 @@ import { Veiculo } from '../veiculos.entity';
 import { Repository } from 'typeorm';
 import { z } from 'zod';
 import { VeiculoBuscaReq, VeiculoSchema } from '../dto/veiculo.dto';
-import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { mapearComDescriptografia } from 'src/common/mapper/mapear-descriptografia.mapper.ts';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 import {
   UsuarioSchema,
   UsuarioType,
@@ -15,15 +15,26 @@ import {
 export class BuscarVeiculoService {
   constructor(
     @InjectRepository(Veiculo)
-    private readonly veiculoRepository: Repository<Veiculo>,
-    private readonly encryptionService: EncryptionService,
+    private readonly veiculoRepositorio: Repository<Veiculo>,
+    private readonly criptografiaService: CriptografiaService,
   ) {}
 
+  /**
+   * Busca um único veículo de um lojista específico.
+   *
+   * @param dados - Contém o ID do veículo e o ID do lojista autenticado.
+   * @returns Veículo encontrado com as informações do usuário descriptografadas.
+   * @throws NotFoundException - Caso o veículo não seja encontrado.
+   */
   async execute(
-    data: z.infer<typeof VeiculoBuscaReq>,
+    dados: z.infer<typeof VeiculoBuscaReq>,
   ): Promise<z.infer<typeof VeiculoSchema>> {
-    const veiculo = await this.veiculoRepository.findOne({
-      where: { id: data.veiculoId, usuario: { id: data.usuarioId } },
+    // Busca o veículo com as relações necessárias
+    const veiculo = await this.veiculoRepositorio.findOne({
+      where: {
+        id: dados.veiculoId,
+        usuario: { id: dados.usuarioId },
+      },
       relations: ['imagens', 'usuario'],
     });
 
@@ -31,13 +42,14 @@ export class BuscarVeiculoService {
       throw new NotFoundException('Veículo não encontrado');
     }
 
-    const usuario = await mapWithDecryptionDto<UsuarioType>(
+    // Descriptografa os dados sensíveis do usuário
+    const usuarioDescriptografado = await mapearComDescriptografia<UsuarioType>(
       veiculo.usuario,
       UsuarioSchema,
-      this.encryptionService,
+      this.criptografiaService,
       ['email', 'nome'],
     );
 
-    return { ...veiculo, usuario: usuario };
+    return { ...veiculo, usuario: usuarioDescriptografado };
   }
 }

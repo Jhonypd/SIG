@@ -9,9 +9,9 @@ import {
 } from 'src/common/interfaces/jwt-payload.interface';
 import { Usuario } from '../usuarios/usuarios.entity';
 import { Repository } from 'typeorm';
-import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
+import { mapearComDescriptografia } from 'src/common/mapper/mapear-descriptografia.mapper.ts';
 import { z } from 'zod';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
     private readonly config: ConfigService,
-    private readonly encryptionService: EncryptionService,
+    private readonly criptografiaService: CriptografiaService,
   ) {
     // Define como o JWT será extraído e a chave usada para validar a assinatura
     super({
@@ -57,10 +57,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // Retorna os dados descriptografados conforme tipagem definida no payload
-    const usuario = await mapWithDecryptionDto<JwtPayloadType>(
+    const usuario = await mapearComDescriptografia<JwtPayloadType>(
       usuarioExiste,
       JwtPayload,
-      this.encryptionService,
+      this.criptografiaService,
       ['email', 'nome'], // campos que precisam ser descriptografados
     );
 

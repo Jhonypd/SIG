@@ -5,9 +5,9 @@ import { VeiculosController } from './veiculo.controller';
 import { CriarVeiculoService } from './services/criar-veiculo.service';
 import { ImagemModule } from '../imagens/imagens.module';
 import { BuscarVeiculoService } from './services/buscar-veiculo.service';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 import { BuscarTodosVeiculosService } from './services/buscar-todos-veiculos.service';
-import { DeleteVeiculoService } from './services/delete-veiculo.service';
+import { DeletarVeiculoService } from './services/deletar-veiculo.service';
 import { AlterarVeiculoService } from './services/alterar-veiculo.service';
 
 @Module({
@@ -16,9 +16,9 @@ import { AlterarVeiculoService } from './services/alterar-veiculo.service';
     AlterarVeiculoService,
     CriarVeiculoService,
     BuscarVeiculoService,
-    EncryptionService,
+    CriptografiaService,
     BuscarTodosVeiculosService,
-    DeleteVeiculoService,
+    DeletarVeiculoService,
   ],
   controllers: [VeiculosController],
 })

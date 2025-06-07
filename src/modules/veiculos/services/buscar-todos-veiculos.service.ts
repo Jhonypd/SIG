@@ -9,8 +9,8 @@ import {
   VeiculoBuscaReq,
   VeiculoSchema,
 } from '../dto/veiculo.dto';
-import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { mapearComDescriptografia } from 'src/common/mapper/mapear-descriptografia.mapper.ts';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 import {
   UsuarioSchema,
   UsuarioType,
@@ -20,15 +20,16 @@ import {
 export class BuscarTodosVeiculosService {
   constructor(
     @InjectRepository(Veiculo)
-    private readonly veiculoRepository: Repository<Veiculo>,
-    private readonly encryptionService: EncryptionService,
+    private readonly veiculoRepositorio: Repository<Veiculo>,
+    private readonly criptografiaService: CriptografiaService,
   ) {}
+
   /**
-   * Busca todos os veículos do lojista autenticado com filtros opcionais.
+   * Busca paginada de todos os veículos do lojista autenticado, com filtros opcionais.
    *
-   * @param filtros - Filtros de marca, modelo, ano, preço, etc.
+   * @param filtros - Parâmetros de filtro como marca, modelo, ano, preço, etc.
    * @param lojistaId - ID do lojista autenticado.
-   * @returns Lista paginada de veículos com dados do usuário descriptografados.
+   * @returns Objeto de resposta paginada contendo veículos e dados do usuário descriptografados.
    */
   async execute(
     filtros: z.infer<typeof VeiculosFiltroReq>,
@@ -46,40 +47,41 @@ export class BuscarTodosVeiculosService {
       limite,
     } = filtros;
 
-    const filtroVeiculosQuery = this.veiculoRepository
+    // Criação da query base com joins e filtro por lojista
+    const consultaVeiculos = this.veiculoRepositorio
       .createQueryBuilder('veiculo')
       .leftJoinAndSelect('veiculo.imagens', 'imagens')
       .innerJoinAndSelect('veiculo.usuario', 'usuario')
       .where('usuario.id = :lojistaId', { lojistaId });
-    console.log({ filtroVeiculosQuery });
+
+    // Filtros por marca e modelo com case-insensitive
     if (marca) {
-      filtroVeiculosQuery.andWhere('LOWER(veiculo.marca) LIKE LOWER(:marca)', {
+      consultaVeiculos.andWhere('LOWER(veiculo.marca) LIKE LOWER(:marca)', {
         marca: `%${marca}%`,
       });
     }
 
     if (modelo) {
-      filtroVeiculosQuery.andWhere(
-        'LOWER(veiculo.modelo) LIKE LOWER(:modelo)',
-        {
-          modelo: `%${modelo}%`,
-        },
-      );
+      consultaVeiculos.andWhere('LOWER(veiculo.modelo) LIKE LOWER(:modelo)', {
+        modelo: `%${modelo}%`,
+      });
     }
 
+    // Filtro por intervalo de ano
     if (minAno && maxAno) {
-      filtroVeiculosQuery.andWhere('veiculo.ano BETWEEN :minAno AND :maxAno', {
+      consultaVeiculos.andWhere('veiculo.ano BETWEEN :minAno AND :maxAno', {
         minAno,
         maxAno,
       });
     } else if (minAno) {
-      filtroVeiculosQuery.andWhere('veiculo.ano >= :minAno', { minAno });
+      consultaVeiculos.andWhere('veiculo.ano >= :minAno', { minAno });
     } else if (maxAno) {
-      filtroVeiculosQuery.andWhere('veiculo.ano <= :maxAno', { maxAno });
+      consultaVeiculos.andWhere('veiculo.ano <= :maxAno', { maxAno });
     }
 
+    // Filtro por intervalo de preço
     if (minPreco && maxPreco) {
-      filtroVeiculosQuery.andWhere(
+      consultaVeiculos.andWhere(
         'veiculo.preco BETWEEN :minPreco AND :maxPreco',
         {
           minPreco,
@@ -87,44 +89,45 @@ export class BuscarTodosVeiculosService {
         },
       );
     } else if (minPreco) {
-      filtroVeiculosQuery.andWhere('veiculo.preco >= :minPreco', { minPreco });
+      consultaVeiculos.andWhere('veiculo.preco >= :minPreco', { minPreco });
     } else if (maxPreco) {
-      filtroVeiculosQuery.andWhere('veiculo.preco <= :maxPreco', { maxPreco });
+      consultaVeiculos.andWhere('veiculo.preco <= :maxPreco', { maxPreco });
     }
 
+    // Filtro por palavras-chave no modelo, marca ou descrição
     if (palavrasChave?.trim()) {
-      const palavras = `%${palavrasChave.toLowerCase()}%`;
-      filtroVeiculosQuery.andWhere(
-        `(LOWER(veiculo.descricao) LIKE :palavras
-      OR LOWER(veiculo.modelo) LIKE :palavras
-      OR LOWER(veiculo.marca) LIKE :palavras)`,
-        { palavras },
+      const palavra = `%${palavrasChave.toLowerCase()}%`;
+      consultaVeiculos.andWhere(
+        `(LOWER(veiculo.descricao) LIKE :palavra
+          OR LOWER(veiculo.modelo) LIKE :palavra
+          OR LOWER(veiculo.marca) LIKE :palavra)`,
+        { palavra },
       );
     }
 
-    filtroVeiculosQuery
+    // Ordenação e paginação
+    consultaVeiculos
       .orderBy('veiculo.preco', 'DESC')
       .skip(pagina * limite)
       .take(limite);
 
-    const [lista, total] = await filtroVeiculosQuery.getManyAndCount();
+    const [listaVeiculos, total] = await consultaVeiculos.getManyAndCount();
 
-    const listaTratada = await Promise.all(
-      lista.map(async (veiculo) => {
-        return {
-          ...veiculo,
-          usuario: await mapWithDecryptionDto<UsuarioType>(
-            veiculo.usuario,
-            UsuarioSchema,
-            this.encryptionService,
-            ['nome', 'email'],
-          ),
-        };
-      }),
+    // Descriptografando dados sensíveis do usuário
+    const listaFinal = await Promise.all(
+      listaVeiculos.map(async (veiculo) => ({
+        ...veiculo,
+        usuario: await mapearComDescriptografia<UsuarioType>(
+          veiculo.usuario,
+          UsuarioSchema,
+          this.criptografiaService,
+          ['nome', 'email'],
+        ),
+      })),
     );
-    console.log({ listaTratada });
+
     return {
-      ListaGrid: listaTratada,
+      ListaGrid: listaFinal,
       ItensPorPagina: limite,
       TotalPaginas: Math.ceil(total / limite),
       TotalRegistros: total,

@@ -8,7 +8,7 @@ import { RegistroSchemaDto } from './dto/register.dto';
 import { z } from 'zod';
 import { LoginSchemaDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 import { BuscarUsuarioService } from '../usuarios/services/buscar-usuario.service';
 import { CriarUsuarioService } from '../usuarios/services/criar-usuario.service';
 
@@ -18,7 +18,7 @@ export class AuthService {
     private readonly buscarUsuarioService: BuscarUsuarioService,
     private readonly criarUsuarioService: CriarUsuarioService,
     private readonly jwtService: JwtService,
-    private readonly encryptionService: EncryptionService,
+    private readonly criptografiaService: CriptografiaService,
   ) {}
 
   /**
@@ -84,8 +84,8 @@ export class AuthService {
 
     const payload = {
       id: usuario.id,
-      email: this.encryptionService.decrypt(usuario.email),
-      name: this.encryptionService.decrypt(usuario.nome),
+      email: this.criptografiaService.descriptografar(usuario.email),
+      name: this.criptografiaService.descriptografar(usuario.nome),
     };
 
     const token = await this.jwtService.signAsync(payload);

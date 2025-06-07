@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 import { UsersModule } from '../usuarios/usuarios.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from '../usuarios/usuarios.entity';
@@ -23,7 +23,7 @@ import { Usuario } from '../usuarios/usuarios.entity';
     ConfigModule,
     UsersModule,
   ],
-  providers: [AuthService, JwtStrategy, EncryptionService],
+  providers: [AuthService, JwtStrategy, CriptografiaService],
   controllers: [AuthController],
   exports: [AuthService],
 })

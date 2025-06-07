@@ -4,14 +4,14 @@ import { Not, Repository } from 'typeorm';
 import { z } from 'zod';
 import * as bcrypt from 'bcrypt';
 import { createHmac } from 'crypto';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 import { Usuario } from '../usuarios.entity';
 import {
   UsuarioAlterarReq,
   UsuarioSchema,
   UsuarioType,
 } from '../dto/usuario.dto';
-import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
+import { mapearComDescriptografia } from 'src/common/mapper/mapear-descriptografia.mapper.ts';
 
 @Injectable()
 export class AlterarUsuarioService {
@@ -19,7 +19,7 @@ export class AlterarUsuarioService {
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
 
-    private readonly encryptionService: EncryptionService,
+    private readonly criptografiaService: CriptografiaService,
   ) {}
 
   /**
@@ -80,7 +80,7 @@ export class AlterarUsuarioService {
         throw new BadRequestException('E-mail já está sendo utilizado');
       }
 
-      dadosAtualizacao.email = this.encryptionService.encrypt(
+      dadosAtualizacao.email = this.criptografiaService.criptografar(
         data.dadosAlteracao.email,
       );
       dadosAtualizacao.hashEmail = novoHashEmail;
@@ -114,10 +114,10 @@ export class AlterarUsuarioService {
     });
 
     // Retorna o DTO com campos descriptografados
-    return await mapWithDecryptionDto<UsuarioType>(
+    return await mapearComDescriptografia<UsuarioType>(
       usuarioAtualizado,
       UsuarioSchema,
-      this.encryptionService,
+      this.criptografiaService,
       ['email', 'nome'],
     );
   }

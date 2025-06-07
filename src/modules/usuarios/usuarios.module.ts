@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from './usuarios.entity';
 import { BuscarUsuarioService } from './services/buscar-usuario.service';
@@ -10,7 +10,7 @@ import { AlterarUsuarioService } from './services/alterar-usuario.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Usuario])],
   providers: [
-    EncryptionService,
+    CriptografiaService,
     BuscarUsuarioService,
     CriarUsuarioService,
     AlterarUsuarioService,

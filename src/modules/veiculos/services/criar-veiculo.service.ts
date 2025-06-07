@@ -14,47 +14,63 @@ import { BuscarVeiculoService } from './buscar-veiculo.service';
 export class CriarVeiculoService {
   constructor(
     @InjectRepository(Veiculo)
-    private readonly veiculoRepository: Repository<Veiculo>,
-    private readonly imageService: ImagemService,
-    private readonly buscarVeiculoService: BuscarVeiculoService,
+    private readonly veiculoRepositorio: Repository<Veiculo>,
+    private readonly servicoImagem: ImagemService,
+    private readonly servicoBuscarVeiculo: BuscarVeiculoService,
   ) {}
 
+  /**
+   * Cria um novo veículo para o lojista autenticado, com validação e inclusão de imagens.
+   *
+   * @param dados - Dados do veículo a serem criados.
+   * @param idLojista - ID do lojista autenticado.
+   * @returns O veículo criado com os dados completos e imagens associadas.
+   * @throws BadRequestException - Caso a validação dos dados falhe.
+   */
   async execute(
-    data: z.infer<typeof VeiculoCriarReq>,
-    lojistaId: z.infer<typeof VeiculoBuscaReq>['usuarioId'],
+    dados: z.infer<typeof VeiculoCriarReq>,
+    idLojista: z.infer<typeof VeiculoBuscaReq>['usuarioId'],
   ): Promise<z.infer<typeof VeiculoSchema>> {
-    const validation = VeiculoCriarReq.safeParse(data);
-
-    if (!validation.success) {
-      throw new BadRequestException(validation.error);
+    // Validação dos dados do veículo com zod
+    const validacao = VeiculoCriarReq.safeParse(dados);
+    if (!validacao.success) {
+      throw new BadRequestException(validacao.error);
     }
 
-    const Veiculo = this.veiculoRepository.create({
-      ...data.veiculo,
-      usuario: { id: lojistaId },
+    // Cria a entidade Veículo com associação ao usuário
+    // lojista e lista vazia de imagens inicialmente
+    const novoVeiculo = this.veiculoRepositorio.create({
+      ...dados.veiculo,
+      usuario: { id: idLojista },
       imagens: [],
     });
 
-    const veiculoSalvo = await this.veiculoRepository.save(Veiculo);
+    // Salva o veículo no banco
+    const veiculoSalvo = await this.veiculoRepositorio.save(novoVeiculo);
 
-    if (data.imagens && data.imagens.length > 0) {
+    // Se houver imagens, cria as entradas relacionadas para cada
+    //  imagem
+    if (dados.imagens && dados.imagens.length > 0) {
       await Promise.all(
-        data.imagens.map(
-          async (imagem) =>
-            await this.imageService.criar({
-              url: imagem.url,
-              veiculoId: veiculoSalvo.id,
-              nome: `${veiculoSalvo.marca.replace(' ', '_')}-${veiculoSalvo.modelo.replace(' ', '_')}-${veiculoSalvo.id.split('-')[4]}`,
-            }),
-        ),
+        dados.imagens.map(async (imagem) => {
+          return await this.servicoImagem.criar({
+            url: imagem.url,
+            veiculoId: veiculoSalvo.id,
+            nome: `${veiculoSalvo.marca.replace(' ', '_')}-${veiculoSalvo.modelo.replace(' ', '_')}-${veiculoSalvo.id.split('-')[4]}`,
+          });
+        }),
       );
     }
 
-    const veiculoCriado = await this.buscarVeiculoService.execute({
+    // Busca o veículo criado com todos os dados e imagens associadas
+    // para retorno
+    const veiculoCompleto = await this.servicoBuscarVeiculo.execute({
       veiculoId: veiculoSalvo.id,
-      usuarioId: lojistaId,
+      usuarioId: idLojista,
     });
 
-    return veiculoCriado ? veiculoCriado : veiculoSalvo;
+    // Retorna o veículo completo, ou o salvo diretamente caso
+    // não encontre o completo
+    return veiculoCompleto ? veiculoCompleto : veiculoSalvo;
   }
 }

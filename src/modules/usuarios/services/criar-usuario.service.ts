@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 import { z } from 'zod';
 import * as bcrypt from 'bcrypt';
 import { createHmac } from 'crypto';
-import { EncryptionService } from 'src/common/encryption/encryption.service';
+import { CriptografiaService } from 'src/common/encryption/criptografia.service';
 import { Usuario } from '../usuarios.entity';
 import { BuscarUsuarioService } from './buscar-usuario.service';
-import { mapWithDecryptionDto } from 'src/common/mapper/map-decryption.mapper';
+import { mapearComDescriptografia } from 'src/common/mapper/mapear-descriptografia.mapper.ts';
 import {
   UsuarioSchema,
   UsuarioCriarReq,
@@ -19,7 +19,7 @@ export class CriarUsuarioService {
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
-    private readonly encryptionService: EncryptionService,
+    private readonly criptografiaService: CriptografiaService,
     private readonly buscarUsuarioService: BuscarUsuarioService,
   ) {}
 
@@ -37,18 +37,18 @@ export class CriarUsuarioService {
 
     const usuarioDados = this.usuarioRepository.create({
       ...data,
-      nome: this.encryptionService.encrypt(data.nome),
-      email: this.encryptionService.encrypt(data.email),
+      nome: this.criptografiaService.criptografar(data.nome),
+      email: this.criptografiaService.criptografar(data.email),
       hashEmail: hashedEmail,
       senha: hashedPassword,
     });
 
     const usuarioCriado = await this.usuarioRepository.save(usuarioDados);
 
-    const usuario = await mapWithDecryptionDto<UsuarioType>(
+    const usuario = await mapearComDescriptografia<UsuarioType>(
       usuarioCriado,
       UsuarioSchema,
-      this.encryptionService,
+      this.criptografiaService,
       ['email', 'nome'],
     );
 

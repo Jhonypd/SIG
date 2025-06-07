@@ -15,7 +15,7 @@ import {
   TipoRetorno,
 } from 'src/common/dto/response.dto';
 import { LoginRequestDto } from './dto/swagger/login-request.dto';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
+import { ZodValidacaoPipe } from 'src/common/pipes/zod-validacoes.pipe';
 import { RespostaPadrao } from 'src/common/interfaces/response.interface';
 
 @ApiTags('Autorizacao')
@@ -46,7 +46,7 @@ export class AuthController {
     type: RespostaPadraoSwaggerDto,
   })
   async registrarLojista(
-    @Body(new ZodValidationPipe(RegistroSchemaDto))
+    @Body(new ZodValidacaoPipe(RegistroSchemaDto))
     body: z.infer<typeof RegistroSchemaDto>,
   ): Promise<RespostaPadrao<{ Id: string }>> {
     const usuario = await this.authService.registrarLojista(body);
@@ -83,7 +83,7 @@ export class AuthController {
     type: RespostaPadraoSwaggerDto,
   })
   async gerarTokenLogin(
-    @Body(new ZodValidationPipe(LoginSchemaDto))
+    @Body(new ZodValidacaoPipe(LoginSchemaDto))
     body: z.infer<typeof LoginSchemaDto>,
   ): Promise<RespostaPadrao<{ Token: string; Validade: Date | null }>> {
     const token = await this.authService.gerarTokenLogin(body);

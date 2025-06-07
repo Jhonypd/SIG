@@ -7,9 +7,7 @@ import {
   Delete,
   Put,
   UseGuards,
-  Request,
   Query,
-  UsePipes,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -29,9 +27,8 @@ import { BuscarTodosVeiculosService } from './services/buscar-todos-veiculos.ser
 import { z } from 'zod';
 import { FiltroVeiculoRequestDto } from './dto/swagger/filtro-veiculo-request.dto';
 import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
-import { ZodValidationPipe } from 'src/common/pipes/zod-validations.pipe';
-import { DeleteVeiculoService } from './services/delete-veiculo.service';
-import { AlterarVeiculoService } from './services/alterar-veiculo.service';
+import { ZodValidacaoPipe } from 'src/common/pipes/zod-validacoes.pipe';
+import { DeletarVeiculoService } from './services/deletar-veiculo.service';
 
 import { AtualizaVeiculoRequestDto } from './dto/swagger/alterar-veiculo-request.dto';
 import {
@@ -39,6 +36,7 @@ import {
   VeiculoCriarReq,
   VeiculosFiltroReq,
 } from './dto/veiculo.dto';
+import { AlterarVeiculoService } from './services/alterar-veiculo.service';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -49,7 +47,7 @@ export class VeiculosController {
     private readonly criarVeiculoService: CriarVeiculoService,
     private readonly buscarVeiculoService: BuscarVeiculoService,
     private readonly buscarTodosVeiculoService: BuscarTodosVeiculosService,
-    private readonly deleteVeiculoService: DeleteVeiculoService,
+    private readonly deleteVeiculoService: DeletarVeiculoService,
     private readonly alterarVeiculoService: AlterarVeiculoService,
   ) {}
 
@@ -64,14 +62,12 @@ export class VeiculosController {
     type: RespostaPadraoSwaggerDto,
   })
   criarVeiculo(
-    @Body(new ZodValidationPipe(VeiculoCriarReq))
+    @Body(new ZodValidacaoPipe(VeiculoCriarReq))
     veiculo: z.infer<typeof VeiculoCriarReq>,
     @getUserToken() userToken: UsuarioData,
   ) {
     return this.criarVeiculoService.execute(veiculo, userToken.id);
   }
-
-  
 
   @Put('alterar')
   @ApiBody({ type: AtualizaVeiculoRequestDto, required: false })
@@ -84,7 +80,7 @@ export class VeiculosController {
     type: RespostaPadraoSwaggerDto,
   })
   alterarVeiculo(
-    @Body(new ZodValidationPipe(AtualizaVeiculoDto))
+    @Body(new ZodValidacaoPipe(AtualizaVeiculoDto))
     body: z.infer<typeof AtualizaVeiculoDto>,
     @getUserToken() userToken: UsuarioData,
   ) {
@@ -127,7 +123,7 @@ export class VeiculosController {
   })
   @ApiQuery({ type: FiltroVeiculoRequestDto, required: false })
   buscarTodosVeiculos(
-    @Query(new ZodValidationPipe(VeiculosFiltroReq))
+    @Query(new ZodValidacaoPipe(VeiculosFiltroReq))
     filtros: z.infer<typeof VeiculosFiltroReq>,
     @getUserToken() userToken: UsuarioData,
   ) {
