@@ -54,11 +54,6 @@ docker-compose up -d
 npm install
 ```
 
-6. **Execute as migrações do banco (se houver):**
-```bash
-npm run migration:run
-```
-
 ## Configuração do Banco de Dados com Docker
 
 Este projeto utiliza um container Docker com MySQL 8.0 configurado conforme abaixo:
