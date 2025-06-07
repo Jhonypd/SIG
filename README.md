@@ -65,12 +65,12 @@ services:
     container_name: sig-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: admin123
-      MYSQL_DATABASE: veiculo_db
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - '3306:3306'
+      - '${DATABASE_PORT}:3306'
     volumes:
       - ./database:/var/lib/mysql
 ```
