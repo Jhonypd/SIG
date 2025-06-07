@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { RespostaPadraoSwaggerDto } from 'src/common/dto/response.dto';
 import { ZodValidacaoPipe } from 'src/common/pipes/zod-validacoes.pipe';
 import { AlterarUsuarioService } from './services/alterar-usuario.service';
-import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
+import { UsuarioToken } from 'src/common/decorators/usuario-token.decorator';
 import { UsuarioData } from 'src/common/interfaces/usuario-data';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { AlterarUsuarioRequestDto } from './dto/swagger/usuario-alterar-request.dto';
@@ -54,11 +54,11 @@ export class UsuarioController {
   async alterarUsuario(
     @Body(new ZodValidacaoPipe(UsuarioControllerCriar))
     body: z.infer<typeof UsuarioControllerCriar>,
-    @getUserToken() userToken: UsuarioData,
+    @UsuarioToken() usuarioToken: UsuarioData,
   ): Promise<RespostaPadrao<{ usuario: z.infer<typeof UsuarioSchema> }>> {
     const usuario = await this.alterarUsuarioService.execute({
-      lojistaId: userToken.id,
-      lojistaEmail: userToken.email,
+      lojistaId: usuarioToken.id,
+      lojistaEmail: usuarioToken.email,
       dadosAlteracao: body.dadosAlteracao,
     });
 

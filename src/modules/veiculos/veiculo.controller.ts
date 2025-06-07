@@ -26,7 +26,7 @@ import { VeiculoReqSwagger } from './dto/swagger/criar-veiculo-request.dto';
 import { BuscarTodosVeiculosService } from './services/buscar-todos-veiculos.service';
 import { z } from 'zod';
 import { FiltroVeiculoRequestDto } from './dto/swagger/filtro-veiculo-request.dto';
-import { getUserToken } from 'src/common/decorators/get-user-token.decorator';
+import { UsuarioToken } from 'src/common/decorators/usuario-token.decorator';
 import { ZodValidacaoPipe } from 'src/common/pipes/zod-validacoes.pipe';
 import { DeletarVeiculoService } from './services/deletar-veiculo.service';
 
@@ -64,9 +64,9 @@ export class VeiculosController {
   criarVeiculo(
     @Body(new ZodValidacaoPipe(VeiculoCriarReq))
     veiculo: z.infer<typeof VeiculoCriarReq>,
-    @getUserToken() userToken: UsuarioData,
+    @UsuarioToken() usuarioToken: UsuarioData,
   ) {
-    return this.criarVeiculoService.execute(veiculo, userToken.id);
+    return this.criarVeiculoService.execute(veiculo, usuarioToken.id);
   }
 
   @Put('alterar')
@@ -82,7 +82,7 @@ export class VeiculosController {
   alterarVeiculo(
     @Body(new ZodValidacaoPipe(AtualizaVeiculoDto))
     body: z.infer<typeof AtualizaVeiculoDto>,
-    @getUserToken() userToken: UsuarioData,
+    @UsuarioToken() usuarioToken: UsuarioData,
   ) {
     return this.alterarVeiculoService.execute(
       {
@@ -91,7 +91,7 @@ export class VeiculosController {
         imagensExcluir: body.imagensExcluir,
         veiculoId: body.veiculoId,
       },
-      userToken.id,
+      usuarioToken.id,
     );
   }
 
@@ -104,10 +104,10 @@ export class VeiculosController {
     description: 'Veículo removido com sucesso.',
     type: RespostaPadraoSwaggerDto,
   })
-  deletar(@Param('id') id: string, @getUserToken() userToken: UsuarioData) {
+  deletar(@Param('id') id: string, @UsuarioToken() usuarioToken: UsuarioData) {
     return this.deleteVeiculoService.execute({
       veiculoId: id,
-      usuarioId: userToken.id,
+      usuarioId: usuarioToken.id,
     });
   }
 
@@ -125,9 +125,9 @@ export class VeiculosController {
   buscarTodosVeiculos(
     @Query(new ZodValidacaoPipe(VeiculosFiltroReq))
     filtros: z.infer<typeof VeiculosFiltroReq>,
-    @getUserToken() userToken: UsuarioData,
+    @UsuarioToken() usuarioToken: UsuarioData,
   ) {
-    return this.buscarTodosVeiculoService.execute(filtros, userToken.id);
+    return this.buscarTodosVeiculoService.execute(filtros, usuarioToken.id);
   }
 
   @Get(':id')
@@ -141,10 +141,10 @@ export class VeiculosController {
   })
   buscarVeiculo(
     @Param('id') id: string,
-    @getUserToken() userToken: UsuarioData,
+    @UsuarioToken() usuarioToken: UsuarioData,
   ) {
     return this.buscarVeiculoService.execute({
-      usuarioId: userToken.id,
+      usuarioId: usuarioToken.id,
       veiculoId: id,
     });
   }

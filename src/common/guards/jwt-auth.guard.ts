@@ -10,9 +10,13 @@ import { z } from 'zod';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest<Request>();
-    const token = this.extractToken(request);
+  /**
+   * Intercepta a requisição antes de passar para o handler.
+   * Verifica se o token está presente e válido.
+   */
+  canActivate(contexto: ExecutionContext) {
+    const req = contexto.switchToHttp().getRequest<Request>();
+    const token = this.extrairToken(req);
 
     if (!token) {
       throw new UnauthorizedException({
@@ -21,44 +25,55 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       });
     }
 
-    return super.canActivate(context);
+    return super.canActivate(contexto);
   }
 
+  /**
+   * Trata o resultado da autenticação. Se válido, anexa o usuário à requisição.
+   */
   handleRequest<T = z.infer<typeof JwtPayload>>(
-    err: any,
-    user: T,
+    erro: any,
+    usuario: T,
     info: any,
-    context: ExecutionContext,
+    contexto: ExecutionContext,
   ) {
-    if (err || !user) {
-      throw this.createException(info || err);
+    if (erro || !usuario) {
+      throw this.criarExcecao(info || erro);
     }
 
-    // Adiciona o userToken à requisição
-    const request = context.switchToHttp().getRequest<Request>();
-    request['userToken'] = user;
+    // Anexa o usuário decodificado à requisição
+    const req = contexto.switchToHttp().getRequest<Request>();
+    req['usuario'] = usuario;
 
-    return user;
+    return usuario;
   }
 
-  private extractToken(req: Request): string | null {
-    const [type, token] = req.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : null;
+  /**
+   * Extrai o token JWT do header da requisição.
+   */
+  private extrairToken(req: Request): string | null {
+    const [tipo, token] = req.headers.authorization?.split(' ') ?? [];
+    return tipo === 'Bearer' ? token : null;
   }
 
-  private createException(error: any): UnauthorizedException {
-    if (error.name === 'TokenExpiredError') {
+  /**
+   * Mapeia os erros comuns de autenticação JWT para mensagens mais amigáveis.
+   */
+  private criarExcecao(erro: any): UnauthorizedException {
+    if (erro?.name === 'TokenExpiredError') {
       return new UnauthorizedException({
         error: 'Sessão expirada',
         message: 'Faça login novamente para continuar',
       });
     }
-    if (error.name === 'JsonWebTokenError') {
+
+    if (erro?.name === 'JsonWebTokenError') {
       return new UnauthorizedException({
         error: 'Token inválido',
         message: 'Erro de autenticação, tente novamente',
       });
     }
+
     return new UnauthorizedException('Não autorizado');
   }
 }
