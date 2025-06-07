@@ -2,97 +2,321 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+<p align="center">
+  Um framework progressivo para Node.js para construir aplicações server-side eficientes e escaláveis.
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## Sobre o Projeto
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Sistema de gerenciamento de veículos desenvolvido com NestJS, MySQL e Docker. A aplicação conta com autenticação segura via JWT e criptografia dos dados mais sensíveis, garantindo que as informações dos lojistas estejam sempre protegidas.
 
-## Project setup
+## Requisitos
 
+Para executar este projeto, é necessário ter instalado:
+
+- **Node.js** (versão 16 ou superior)
+- **npm** ou **yarn**
+- **Docker** e **Docker Compose**
+
+O Docker será usado para rodar o banco de dados MySQL em um container isolado, facilitando o desenvolvimento e a configuração do ambiente.
+
+### Instalação do Docker
+
+Se ainda não possui o Docker instalado, faça o download e instalação a partir do site oficial:
+
+* [Docker Desktop para Windows e Mac](https://www.docker.com/products/docker-desktop)
+* [Docker para Linux](https://docs.docker.com/engine/install/)
+
+Após a instalação, certifique-se que o Docker está rodando corretamente antes de continuar.
+
+## Instalação
+
+1. **Clone o repositório:**
 ```bash
-$ npm install
+git clone [url-do-repositorio]
+cd [nome-do-projeto]
 ```
 
-## Compile and run the project
-
+2. **Copie o arquivo de exemplo das variáveis de ambiente:**
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+3. **Configure as variáveis no arquivo `.env`** (veja seção abaixo)
 
+4. **Suba o container do banco de dados:**
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker-compose up -d
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+5. **Instale as dependências:**
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+6. **Execute as migrações do banco (se houver):**
+```bash
+npm run migration:run
+```
 
-## Resources
+## Configuração do Banco de Dados com Docker
 
-Check out a few resources that may come in handy when working with NestJS:
+Este projeto utiliza um container Docker com MySQL 8.0 configurado conforme abaixo:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```yaml
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sig-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_DATABASE: veiculo_db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin123
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./database:/var/lib/mysql
+```
 
-## Support
+## Variáveis de Ambiente
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Configure as seguintes variáveis de ambiente no seu arquivo `.env`:
 
-## Stay in touch
+```env
+# Database Configuration
+MYSQL_ROOT_PASSWORD=admin123
+MYSQL_DATABASE=veiculo_db
+MYSQL_USER=admin
+MYSQL_PASSWORD=admin123
+DATABASE_PORT=3306
+DATABASE_HOST=localhost
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Security Keys (generate new ones for production)
+HASH_SECRET=your_hash_secret_here
+ENCRYPTION_KEY=generate_with_command_below
+JWT_SECRET=your_jwt_secret_here
+JWT_EXPIRES_IN=3600s
 
-## License
+# Application
+PORT=4000
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Gerar chave de criptografia
+
+Para gerar a chave de criptografia necessária para a variável `ENCRYPTION_KEY`, execute o comando no terminal:
+
+**Linux/Mac:**
+```bash
+xxd -p -l 32 /dev/urandom | tr 'a-f' 'A-F'
+```
+
+**Windows (PowerShell):**
+```powershell
+[System.Web.Security.Membership]::GeneratePassword(64, 0)
+```
+
+Copie a saída e cole na variável `ENCRYPTION_KEY`.
+
+## Como executar o projeto
+
+### Desenvolvimento
+
+```bash
+# Modo desenvolvimento (hot reload)
+npm run start:dev
+```
+
+### Produção
+
+```bash
+# Build da aplicação
+npm run build
+
+# Executar em modo produção
+npm run start:prod
+```
+
+## Documentação da API
+
+Após executar a aplicação, acesse:
+
+- **Swagger UI:** `http://localhost:4000/api/v1`
+- **API Base URL:** `http://localhost:4000`
+
+## Comandos Docker Úteis
+
+```bash
+# Iniciar os containers
+docker-compose up -d
+
+# Parar os containers
+docker-compose down
+
+# Ver logs do banco
+docker logs sig-db
+
+# Acessar o container do banco
+docker exec -it sig-db bash
+
+# Backup do banco de dados
+docker exec sig-db mysqldump -u root -padmin123 veiculo_db > backup.sql
+
+# Restaurar backup
+docker exec -i sig-db mysql -u root -padmin123 veiculo_db < backup.sql
+```
+
+## Comandos para acessar o banco de dados MySQL
+
+```bash
+# Acessar MySQL via container
+docker exec -it sig-db mysql -u root -p
+```
+
+Após digitar a senha (`admin123`), execute os comandos abaixo no prompt MySQL:
+
+```sql
+-- Listar bancos de dados
+SHOW DATABASES;
+
+-- Selecionar o banco configurado
+USE veiculo_db;
+
+-- Listar tabelas do banco
+SHOW TABLES;
+
+-- Sair do prompt MySQL
+EXIT;
+```
+
+## Testes
+
+```bash
+# Testes unitários
+npm run test
+
+# Testes em modo watch
+npm run test:watch
+
+# Testes end-to-end
+npm run test:e2e
+
+# Relatório de cobertura dos testes
+npm run test:cov
+```
+
+## Estrutura do Projeto
+
+```
+src/
+├── common/                          # Utilitários compartilhados
+│   ├── decorators/                  # Decorators customizados
+│   │   └── usuario-token.decorator.ts
+│   ├── dto/                         # DTOs compartilhados
+│   │   └── response.dto.ts
+│   ├── encryption/                  # Serviços de criptografia
+│   │   └── criptografia.service.ts
+│   ├── filters/                     # Exception filters
+│   │   └── http-exception.filter.ts
+│   ├── guards/                      # Guards de autenticação
+│   │   └── jwt-auth.guard.ts
+│   ├── interceptors/                # Interceptors
+│   │   └── response.interceptor.ts
+│   ├── interfaces/                  # Interfaces compartilhadas
+│   │   ├── jwt-payload.interface.ts
+│   │   ├── response.interface.ts
+│   │   └── usuario-data.ts
+│   ├── mapper/                      # Mappers para transformação de dados
+│   │   └── mapear-descriptografia.mapper.ts
+│   └── pipes/                       # Pipes de validação
+│       └── zod-validacoes.pipe.ts
+├── config/                          # Configurações da aplicação
+│   └── swagger.config.ts
+├── modules/                         # Módulos da aplicação
+│   ├── auth/                        # Módulo de autenticação
+│   │   ├── dto/
+│   │   │   ├── swagger/
+│   │   │   ├── login.dto.ts
+│   │   │   └── register.dto.ts
+│   │   ├── auth.controller.ts
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.ts
+│   │   └── jwt.strategy.ts
+│   ├── imagens/                     # Módulo de gerenciamento de imagens
+│   │   ├── dto/
+│   │   ├── imagens.entity.ts
+│   │   ├── imagens.module.ts
+│   │   └── imagens.service.ts
+│   ├── usuarios/                    # Módulo de usuários
+│   │   ├── dto/
+│   │   ├── services/                # Services específicos do módulo
+│   │   │   ├── alterar-usuario.service.ts
+│   │   │   ├── buscar-usuario.service.ts
+│   │   │   └── criar-usuario.service.ts
+│   │   ├── usuarios.controller.ts
+│   │   ├── usuarios.entity.ts
+│   │   └── usuarios.module.ts
+│   └── veiculos/                    # Módulo de veículos
+│       ├── dto/
+│       ├── services/                # Services específicos do módulo
+│       │   ├── alterar-veiculo.service.ts
+│       │   ├── buscar-todos-veiculos.service.ts
+│       │   ├── buscar-veiculo.service.ts
+│       │   ├── criar-veiculo.service.ts
+│       │   └── deletar-veiculo.service.ts
+│       ├── veiculo.controller.ts
+│       ├── veiculo.module.ts
+│       └── veiculos.entity.ts
+├── app.module.ts                    # Módulo principal
+└── main.ts                          # Arquivo de entrada da aplicação
+```
+
+## Solução de Problemas
+
+### Erro de conexão com o banco
+- Verifique se o container MySQL está rodando: `docker ps`
+- Confirme as credenciais no arquivo `.env`
+- Verifique se a porta 3306 não está sendo usada por outro serviço
+
+### Porta já em uso
+- Altere a porta no arquivo `.env` e no `docker-compose.yml`
+- Verifique processos rodando na porta: `netstat -tulpn | grep :4000`
+
+### Problemas com migrações
+```bash
+# Reverter última migração
+npm run migration:revert
+
+# Executar migrações pendentes
+npm run migration:run
+```
+
+## Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## Documentação e Recursos
+
+* [Documentação oficial do NestJS](https://docs.nestjs.com)
+* [Canal no Discord para suporte](https://discord.gg/G7Qnnhy)
+* [Cursos oficiais do NestJS](https://courses.nestjs.com/)
+* [Deploy com Mau na AWS](https://mau.nestjs.com)
+* [Devtools NestJS para visualização da aplicação](https://devtools.nestjs.com)
+* [Suporte corporativo NestJS](https://enterprise.nestjs.com)
+* [Twitter](https://twitter.com/nestframework)
+* [LinkedIn](https://linkedin.com/company/nestjs)
+* [Jobs Board](https://jobs.nestjs.com)
+
+## Licença
+
+Este projeto está licenciado sob a [MIT License](LICENSE) - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+### Sobre a Licença MIT
+A MIT License é uma licença de software livre permissiva que permite uso comercial e modificação do código, desde que a nota de copyright seja mantida.
+
+---
