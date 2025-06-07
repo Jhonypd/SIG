@@ -71,24 +71,7 @@ export class VeiculosController {
     return this.criarVeiculoService.execute(veiculo, userToken.id);
   }
 
-  @Get(':id')
-  @ApiOperation({
-    summary: 'Buscar veículo por ID',
-    description: 'Retorna os detalhes de um veículo específico do lojista.',
-  })
-  @ApiCreatedResponse({
-    description: 'Veículo encontrado com sucesso.',
-    type: RespostaPadraoSwaggerDto,
-  })
-  buscarVeiculo(
-    @Param('id') id: string,
-    @getUserToken() userToken: UsuarioData,
-  ) {
-    return this.buscarVeiculoService.execute({
-      usuarioId: userToken.id,
-      veiculoId: id,
-    });
-  }
+  
 
   @Put('alterar')
   @ApiBody({ type: AtualizaVeiculoRequestDto, required: false })
@@ -125,10 +108,6 @@ export class VeiculosController {
     description: 'Veículo removido com sucesso.',
     type: RespostaPadraoSwaggerDto,
   })
-  @ApiOperation({
-    summary: 'Buscar veículo por ID',
-    description: 'Retorna os detalhes de um veículo específico do lojista.',
-  })
   deletar(@Param('id') id: string, @getUserToken() userToken: UsuarioData) {
     return this.deleteVeiculoService.execute({
       veiculoId: id,
@@ -141,17 +120,36 @@ export class VeiculosController {
     description: 'Operação realizada com sucesso.',
     type: RespostaPadraoSwaggerDto,
   })
-  @ApiQuery({ type: FiltroVeiculoRequestDto, required: false })
   @ApiOperation({
     summary: 'Listar veículos',
     description:
       'Busca todos os veículos cadastrados do lojista autenticado, com filtros opcionais.',
   })
+  @ApiQuery({ type: FiltroVeiculoRequestDto, required: false })
   buscarTodosVeiculos(
     @Query(new ZodValidationPipe(VeiculosFiltroReq))
     filtros: z.infer<typeof VeiculosFiltroReq>,
     @getUserToken() userToken: UsuarioData,
   ) {
     return this.buscarTodosVeiculoService.execute(filtros, userToken.id);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Buscar veículo por ID',
+    description: 'Retorna os detalhes de um veículo específico do lojista.',
+  })
+  @ApiCreatedResponse({
+    description: 'Veículo encontrado com sucesso.',
+    type: RespostaPadraoSwaggerDto,
+  })
+  buscarVeiculo(
+    @Param('id') id: string,
+    @getUserToken() userToken: UsuarioData,
+  ) {
+    return this.buscarVeiculoService.execute({
+      usuarioId: userToken.id,
+      veiculoId: id,
+    });
   }
 }

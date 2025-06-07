@@ -57,9 +57,9 @@ export class UsuarioController {
     @getUserToken() userToken: UsuarioData,
   ): Promise<RespostaPadrao<{ usuario: z.infer<typeof UsuarioSchema> }>> {
     const usuario = await this.alterarUsuarioService.execute({
-      ...body,
       lojistaId: userToken.id,
       lojistaEmail: userToken.email,
+      dadosAlteracao: body.dadosAlteracao,
     });
 
     return {

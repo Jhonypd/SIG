@@ -23,7 +23,13 @@ export class BuscarTodosVeiculosService {
     private readonly veiculoRepository: Repository<Veiculo>,
     private readonly encryptionService: EncryptionService,
   ) {}
-
+  /**
+   * Busca todos os veículos do lojista autenticado com filtros opcionais.
+   *
+   * @param filtros - Filtros de marca, modelo, ano, preço, etc.
+   * @param lojistaId - ID do lojista autenticado.
+   * @returns Lista paginada de veículos com dados do usuário descriptografados.
+   */
   async execute(
     filtros: z.infer<typeof VeiculosFiltroReq>,
     lojistaId: z.infer<typeof VeiculoBuscaReq>['usuarioId'],
@@ -40,66 +46,68 @@ export class BuscarTodosVeiculosService {
       limite,
     } = filtros;
 
-    const qb = this.veiculoRepository
+    const filtroVeiculosQuery = this.veiculoRepository
       .createQueryBuilder('veiculo')
       .leftJoinAndSelect('veiculo.imagens', 'imagens')
-      .leftJoinAndSelect('veiculo.usuario', 'usuario')
+      .innerJoinAndSelect('veiculo.usuario', 'usuario')
       .where('usuario.id = :lojistaId', { lojistaId });
-
+    console.log({ filtroVeiculosQuery });
     if (marca) {
-      qb.andWhere('LOWER(veiculo.marca) LIKE LOWER(:marca)', {
+      filtroVeiculosQuery.andWhere('LOWER(veiculo.marca) LIKE LOWER(:marca)', {
         marca: `%${marca}%`,
       });
     }
 
     if (modelo) {
-      qb.andWhere('LOWER(veiculo.modelo) LIKE LOWER(:modelo)', {
-        modelo: `%${modelo}%`,
-      });
+      filtroVeiculosQuery.andWhere(
+        'LOWER(veiculo.modelo) LIKE LOWER(:modelo)',
+        {
+          modelo: `%${modelo}%`,
+        },
+      );
     }
 
     if (minAno && maxAno) {
-      qb.andWhere('veiculo.ano BETWEEN :minAno AND :maxAno', {
+      filtroVeiculosQuery.andWhere('veiculo.ano BETWEEN :minAno AND :maxAno', {
         minAno,
         maxAno,
       });
     } else if (minAno) {
-      qb.andWhere('veiculo.ano >= :minAno', { minAno });
+      filtroVeiculosQuery.andWhere('veiculo.ano >= :minAno', { minAno });
     } else if (maxAno) {
-      qb.andWhere('veiculo.ano <= :maxAno', { maxAno });
+      filtroVeiculosQuery.andWhere('veiculo.ano <= :maxAno', { maxAno });
     }
 
     if (minPreco && maxPreco) {
-      qb.andWhere('veiculo.preco BETWEEN :minPreco AND :maxPreco', {
-        minPreco,
-        maxPreco,
-      });
+      filtroVeiculosQuery.andWhere(
+        'veiculo.preco BETWEEN :minPreco AND :maxPreco',
+        {
+          minPreco,
+          maxPreco,
+        },
+      );
     } else if (minPreco) {
-      qb.andWhere('veiculo.preco >= :minPreco', { minPreco });
+      filtroVeiculosQuery.andWhere('veiculo.preco >= :minPreco', { minPreco });
     } else if (maxPreco) {
-      qb.andWhere('veiculo.preco <= :maxPreco', { maxPreco });
+      filtroVeiculosQuery.andWhere('veiculo.preco <= :maxPreco', { maxPreco });
     }
 
-    // if (palavrasChave) {
-    //   qb.andWhere('LOWER(veiculo.descricao) LIKE :palavras', {
-    //     palavras: `%${palavrasChave.toLowerCase()}%`,
-    //   });
-    // }
-
-    if (palavrasChave && palavrasChave.trim().length > 0) {
-      qb.andWhere(
-        `(veiculo.descricao IS NOT NULL AND LOWER(veiculo.descricao) LIKE :palavras
+    if (palavrasChave?.trim()) {
+      const palavras = `%${palavrasChave.toLowerCase()}%`;
+      filtroVeiculosQuery.andWhere(
+        `(LOWER(veiculo.descricao) LIKE :palavras
       OR LOWER(veiculo.modelo) LIKE :palavras
       OR LOWER(veiculo.marca) LIKE :palavras)`,
-        { palavras: `%${palavrasChave.toLowerCase()}%` },
+        { palavras },
       );
     }
 
-    qb.orderBy('veiculo.preco', 'DESC')
+    filtroVeiculosQuery
+      .orderBy('veiculo.preco', 'DESC')
       .skip(pagina * limite)
       .take(limite);
 
-    const [lista, total] = await qb.getManyAndCount();
+    const [lista, total] = await filtroVeiculosQuery.getManyAndCount();
 
     const listaTratada = await Promise.all(
       lista.map(async (veiculo) => {
@@ -114,7 +122,7 @@ export class BuscarTodosVeiculosService {
         };
       }),
     );
-
+    console.log({ listaTratada });
     return {
       ListaGrid: listaTratada,
       ItensPorPagina: limite,
